@@ -190,7 +190,7 @@ public class Heimdall {
                     var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
                     var encryptedDataLength = blockSize
                     
-                    let result = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1SHA256), hashData, hashDataLength, &encryptedData, &encryptedDataLength)
+                    let result = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1), hashData, hashDataLength, &encryptedData, &encryptedDataLength)
                     
                     // Base64 of the result
                     let signatureData = NSData(bytes: &encryptedData, length: Int(encryptedDataLength))
@@ -237,7 +237,7 @@ public class Heimdall {
             signature.getBytes(&signatureData, length: signatureLength)
             
             if let key = obtainKey(.Public) {
-                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1SHA256), &signedData, Int(CC_SHA256_DIGEST_LENGTH), &signatureData, signatureLength)
+                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1), &signedData, Int(CC_SHA256_DIGEST_LENGTH), &signatureData, signatureLength)
                 
                 switch result {
                 case noErr:
