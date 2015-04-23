@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectFavoriteDictionaryKey</key>
+	<false/>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>14DB2471-A74E-4985-8C82-5DBD5D51D03A</string>
+	<key>IDESourceControlProjectName</key>
+	<string>HeimdallExample</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>2C28B1DD5070055B39E4A084A7F19A1D2285B789</key>
+		<string>https://github.com/henrinormak/Heimdall.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>HeimdallExample/HeimdallExample.xcodeproj</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>2C28B1DD5070055B39E4A084A7F19A1D2285B789</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/henrinormak/Heimdall.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>111</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>2C28B1DD5070055B39E4A084A7F19A1D2285B789</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>2C28B1DD5070055B39E4A084A7F19A1D2285B789</string>
+			<key>IDESourceControlWCCName</key>
+			<string>Heimdall</string>
+		</dict>
+	</array>
+</dict>
+</plist>
