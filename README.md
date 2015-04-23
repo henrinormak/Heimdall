@@ -8,6 +8,8 @@ Furthermore, Heimdall also helps maintain the public-private RSA key-pair in Key
 
 ## Installation
 
+### Subproject
+
 As Heimdall makes use of CommonCrypto and has it wrapped in a pseudo-module, the easiest way to use Heimdall is to include the entire project (or the produced framework).
 
 Easiest way to use Heimdall is to include the `Heimdall.xcodeproj` into your Xcode project. Then specify the `Heimdall` target as **Target Dependency**.
@@ -17,6 +19,10 @@ Easiest way to use Heimdall is to include the `Heimdall.xcodeproj` into your Xco
 Finally, make sure Heimdall is listed under the **Embedded Binaries** section in Xcode
 
 ![Embedded Binaries under application target settings](/Images/embedded_binary.png?raw=true "Embedded Binary")
+
+### Directly
+
+If you have a bridging header in place, you can also simply include `Heimdall.swift` to your project and add `#import <CommonCrypto/CommonDigest.h>` to your bridging header.
 
 ## Contributing
 
