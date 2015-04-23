@@ -23,6 +23,7 @@ Finally, make sure Heimdall is listed under the **Embedded Binaries** section in
 Currently, Heimdall offers minimal functionality, pull requests and issues are all welcome, especially for the following topics:
 
 * Security, interacting with the Keychain, making sure the results are kept securely etc.
+* Tests, adding tests would also likely increase security
 * Additional configurability, perhaps allowing non-permanent keys
 * Error handling, currently most of the API simply returns `nil`s whenever an error occurs, this should be changed and proper error reporting should be implemented
 * CocoaPods/Carthage support, perhaps some users prefer using dependencies over CocoaPods/Carthage
