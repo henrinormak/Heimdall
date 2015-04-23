@@ -1,0 +1,10 @@
+//
+//  CommonCrypto.xcconfig
+//  Crypto
+//
+//  Created by Sam Soffes on 4/21/15.
+//  Copyright (c) 2015 Sam Soffes. All rights reserved.
+//
+
+MODULEMAP_FILE[sdk=iphoneos*] = $(SRCROOT)/CommonCrypto/iphoneos.modulemap
+MODULEMAP_FILE[sdk=iphonesimulator*] = $(SRCROOT)/CommonCrypto/iphonesimulator.modulemap

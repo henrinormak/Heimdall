@@ -8,8 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		8E866C5A1AE8FBEC005682A2 /* Heimdall.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E866C591AE8FBEC005682A2 /* Heimdall.h */; settings = {ATTRIBUTES = (Public, ); }; };
-		8E866C601AE8FBEC005682A2 /* Heimdall.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E866C541AE8FBEC005682A2 /* Heimdall.framework */; };
 		8E866C671AE8FBEC005682A2 /* HeimdallTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E866C661AE8FBEC005682A2 /* HeimdallTests.swift */; };
+		8E866C9A1AE8FCD6005682A2 /* Heimdall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E866C991AE8FCD6005682A2 /* Heimdall.swift */; };
+		8E866D0D1AE90165005682A2 /* CommonCrypto.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E866CC51AE8FE7D005682A2 /* CommonCrypto.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		8E866D321AE9033B005682A2 /* Heimdall.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E866C541AE8FBEC005682A2 /* Heimdall.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -20,6 +22,13 @@
 			remoteGlobalIDString = 8E866C531AE8FBEC005682A2;
 			remoteInfo = Heimdall;
 		};
+		8E866D0E1AE901CB005682A2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E866C4B1AE8FBEC005682A2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E866CC41AE8FE7D005682A2;
+			remoteInfo = "CommonCrypto-iOS";
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -29,6 +38,12 @@
 		8E866C5F1AE8FBEC005682A2 /* HeimdallTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HeimdallTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E866C651AE8FBEC005682A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E866C661AE8FBEC005682A2 /* HeimdallTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeimdallTests.swift; sourceTree = "<group>"; };
+		8E866C991AE8FCD6005682A2 /* Heimdall.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Heimdall.swift; sourceTree = "<group>"; };
+		8E866CC51AE8FE7D005682A2 /* CommonCrypto.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = CommonCrypto.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E866CDE1AE8FE9E005682A2 /* CommonCrypto.xcconfig */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.xcconfig; path = CommonCrypto.xcconfig; sourceTree = "<group>"; };
+		8E866CDF1AE8FE9E005682A2 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8E866CE01AE8FE9E005682A2 /* iphoneos.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = iphoneos.modulemap; sourceTree = "<group>"; };
+		8E866CE11AE8FE9E005682A2 /* iphonesimulator.modulemap */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = "sourcecode.module-map"; path = iphonesimulator.modulemap; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +51,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E866D0D1AE90165005682A2 /* CommonCrypto.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,7 +59,14 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E866C601AE8FBEC005682A2 /* Heimdall.framework in Frameworks */,
+				8E866D321AE9033B005682A2 /* Heimdall.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E866CC11AE8FE7D005682A2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -55,6 +78,7 @@
 			children = (
 				8E866C561AE8FBEC005682A2 /* Heimdall */,
 				8E866C631AE8FBEC005682A2 /* HeimdallTests */,
+				8E866CC61AE8FE7D005682A2 /* CommonCrypto */,
 				8E866C551AE8FBEC005682A2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -64,6 +88,7 @@
 			children = (
 				8E866C541AE8FBEC005682A2 /* Heimdall.framework */,
 				8E866C5F1AE8FBEC005682A2 /* HeimdallTests.xctest */,
+				8E866CC51AE8FE7D005682A2 /* CommonCrypto.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -72,6 +97,7 @@
 			isa = PBXGroup;
 			children = (
 				8E866C591AE8FBEC005682A2 /* Heimdall.h */,
+				8E866C991AE8FCD6005682A2 /* Heimdall.swift */,
 				8E866C571AE8FBEC005682A2 /* Supporting Files */,
 			);
 			path = Heimdall;
@@ -102,6 +128,17 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		8E866CC61AE8FE7D005682A2 /* CommonCrypto */ = {
+			isa = PBXGroup;
+			children = (
+				8E866CDE1AE8FE9E005682A2 /* CommonCrypto.xcconfig */,
+				8E866CDF1AE8FE9E005682A2 /* Info.plist */,
+				8E866CE01AE8FE9E005682A2 /* iphoneos.modulemap */,
+				8E866CE11AE8FE9E005682A2 /* iphonesimulator.modulemap */,
+			);
+			path = CommonCrypto;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXHeadersBuildPhase section */
@@ -110,6 +147,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				8E866C5A1AE8FBEC005682A2 /* Heimdall.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E866CC21AE8FE7D005682A2 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -128,6 +172,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				8E866D0F1AE901CB005682A2 /* PBXTargetDependency */,
 			);
 			name = Heimdall;
 			productName = Heimdall;
@@ -152,6 +197,24 @@
 			productReference = 8E866C5F1AE8FBEC005682A2 /* HeimdallTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
+		8E866CC41AE8FE7D005682A2 /* CommonCrypto */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8E866CD81AE8FE7D005682A2 /* Build configuration list for PBXNativeTarget "CommonCrypto" */;
+			buildPhases = (
+				8E866CC01AE8FE7D005682A2 /* Sources */,
+				8E866CC11AE8FE7D005682A2 /* Frameworks */,
+				8E866CC21AE8FE7D005682A2 /* Headers */,
+				8E866CC31AE8FE7D005682A2 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = CommonCrypto;
+			productName = CommonCrypto;
+			productReference = 8E866CC51AE8FE7D005682A2 /* CommonCrypto.framework */;
+			productType = "com.apple.product-type.framework";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -165,6 +228,9 @@
 						CreatedOnToolsVersion = 6.3;
 					};
 					8E866C5E1AE8FBEC005682A2 = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					8E866CC41AE8FE7D005682A2 = {
 						CreatedOnToolsVersion = 6.3;
 					};
 				};
@@ -183,6 +249,7 @@
 			targets = (
 				8E866C531AE8FBEC005682A2 /* Heimdall */,
 				8E866C5E1AE8FBEC005682A2 /* HeimdallTests */,
+				8E866CC41AE8FE7D005682A2 /* CommonCrypto */,
 			);
 		};
 /* End PBXProject section */
@@ -202,6 +269,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8E866CC31AE8FE7D005682A2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -209,6 +283,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				8E866C9A1AE8FCD6005682A2 /* Heimdall.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,6 +295,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8E866CC01AE8FE7D005682A2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -227,6 +309,11 @@
 			isa = PBXTargetDependency;
 			target = 8E866C531AE8FBEC005682A2 /* Heimdall */;
 			targetProxy = 8E866C611AE8FBEC005682A2 /* PBXContainerItemProxy */;
+		};
+		8E866D0F1AE901CB005682A2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8E866CC41AE8FE7D005682A2 /* CommonCrypto */;
+			targetProxy = 8E866D0E1AE901CB005682A2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -323,6 +410,7 @@
 		8E866C6B1AE8FBEC005682A2 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -330,14 +418,20 @@
 				INFOPLIST_FILE = Heimdall/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				PRODUCT_NAME = Heimdall;
 				SKIP_INSTALL = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
 		};
 		8E866C6C1AE8FBEC005682A2 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CLANG_ENABLE_MODULES = YES;
 				DEFINES_MODULE = YES;
 				DYLIB_COMPATIBILITY_VERSION = 1;
 				DYLIB_CURRENT_VERSION = 1;
@@ -345,7 +439,11 @@
 				INFOPLIST_FILE = Heimdall/Info.plist;
 				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(SDKROOT)/usr/lib/system",
+				);
+				PRODUCT_NAME = Heimdall;
 				SKIP_INSTALL = YES;
 			};
 			name = Release;
@@ -380,6 +478,42 @@
 			};
 			name = Release;
 		};
+		8E866CD91AE8FE7D005682A2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8E866CDE1AE8FE9E005682A2 /* CommonCrypto.xcconfig */;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = CommonCrypto/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = CommonCrypto;
+				SKIP_INSTALL = YES;
+			};
+			name = Debug;
+		};
+		8E866CDA1AE8FE7D005682A2 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = 8E866CDE1AE8FE9E005682A2 /* CommonCrypto.xcconfig */;
+			buildSettings = {
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				INFOPLIST_FILE = CommonCrypto/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = CommonCrypto;
+				SKIP_INSTALL = YES;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -399,12 +533,22 @@
 				8E866C6C1AE8FBEC005682A2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8E866C6D1AE8FBEC005682A2 /* Build configuration list for PBXNativeTarget "HeimdallTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				8E866C6E1AE8FBEC005682A2 /* Debug */,
 				8E866C6F1AE8FBEC005682A2 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8E866CD81AE8FE7D005682A2 /* Build configuration list for PBXNativeTarget "CommonCrypto" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E866CD91AE8FE7D005682A2 /* Debug */,
+				8E866CDA1AE8FE7D005682A2 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 		};
