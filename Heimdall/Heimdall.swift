@@ -35,6 +35,7 @@
 
 import Foundation
 import Security
+import CommonCrypto
 
 public class Heimdall {
     let tag: String
@@ -46,15 +47,20 @@ public class Heimdall {
         case Private
     }
     
-    init?(tag: String, permanent: Bool = true, keySize: Int = 2048) {
+    public init?(tag: String, keySize: Int = 2048) {
+        let privateTag = tag + ".private"
+        
         self.tag = tag
-        self.privateTag = tag + ".private"
+        self.privateTag = privateTag
         self.keySize = keySize
         
-        // We either already have keys, or we can generate them
-        if (obtainKey(.Public) == nil || obtainKey(.Private) == nil) &&
-            generateKeyPair(permanent) == false {
-            return nil
+        // If we already have both keys, then the permanent flag can be ignored
+        // otherwise we need to generate (and potentially store) the keys
+        if Heimdall.obtainKey(tag, keySize: keySize) == nil || Heimdall.obtainKey(privateTag, keySize: keySize) == nil {
+            let result = Heimdall.generateKeyPair(tag, privateTag: privateTag, keySize: keySize)
+            if result == nil {
+                return nil
+            }
         }
     }
     
@@ -65,48 +71,51 @@ public class Heimdall {
     ///
     /// :returns: Public key in X.509 format as a base64 string (URL safe)
     ///
-    public func X509PublicKey() -> NSString {
-        let key = obtainKeyData(.Public)!
-        let result = NSMutableData()
+    public func X509PublicKey() -> NSString? {
+        if let key = obtainKeyData(.Public) {
+            let result = NSMutableData()
+            
+            let encodingLength: Int = {
+                if key.length + 1 < 128 {
+                    return 1
+                } else {
+                    return ((key.length + 1) / 256) + 2
+                }
+                }()
+            
+            let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+                0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
+            
+            var builder: [CUnsignedChar] = []
+            
+            // ASN.1 SEQUENCE
+            builder.append(0x30)
+            
+            // Overall size, made of OID + bitstring encoding + actual key
+            let size = OID.count + 2 + encodingLength + key.length
+            let encodedSize = Heimdall.encodeLength(size)
+            builder.extend(encodedSize)
+            result.appendBytes(builder, length: builder.count)
+            result.appendBytes(OID, length: OID.count)
+            builder.removeAll(keepCapacity: false)
+            
+            builder.append(0x03)
+            builder.extend(Heimdall.encodeLength(key.length + 1))
+            builder.append(0x00)
+            result.appendBytes(builder, length: builder.count)
+            
+            // Actual key bytes
+            result.appendData(key)
+            
+            // Convert to Base64 and make safe for URLs
+            var string = result.base64EncodedStringWithOptions(.allZeros)
+            string = string.stringByReplacingOccurrencesOfString("/", withString: "_")
+            string = string.stringByReplacingOccurrencesOfString("+", withString: "-")
+            
+            return string
+        }
         
-        let encodingLength: Int = {
-            if key.length + 1 < 128 {
-                return 1
-            } else {
-                return ((key.length + 1) / 256) + 2
-            }
-        }()
-        
-        let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-            0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
-        
-        var builder: [CUnsignedChar] = []
-        
-        // ASN.1 SEQUENCE
-        builder.append(0x30)
-        
-        // Overall size, made of OID + bitstring encoding + actual key
-        let size = OID.count + 2 + encodingLength + key.length
-        let encodedSize = encodeLength(size)
-        builder.extend(encodedSize)
-        result.appendBytes(builder, length: builder.count)
-        result.appendBytes(OID, length: OID.count)
-        builder.removeAll(keepCapacity: false)
-        
-        builder.append(0x03)
-        builder.extend(encodeLength(key.length + 1))
-        builder.append(0x00)
-        result.appendBytes(builder, length: builder.count)
-        
-        // Actual key bytes
-        result.appendData(key)
-        
-        // Convert to Base64 and make safe for URLs
-        var string = result.base64EncodedStringWithOptions(.allZeros)
-        string = string.stringByReplacingOccurrencesOfString("/", withString: "_")
-        string = string.stringByReplacingOccurrencesOfString("+", withString: "-")
-        
-        return string
+        return nil
     }
     
     ///
@@ -118,9 +127,7 @@ public class Heimdall {
     /// :returns: The encrypted version of the string, as Base64 string
     ///
     public func encrypt(string: String, urlEncode: Bool = false) -> String? {
-        let key = obtainKey(.Public)!
-        
-        if let data = encrypt(string, secKey: key, blockSize: SecKeyGetBlockSize(key)) {
+        if let key = obtainKey(.Public), data = Heimdall.encrypt(string, secKey: key, blockSize: SecKeyGetBlockSize(key)) {
             var result = data.base64EncodedStringWithOptions(.allZeros)
             
             if urlEncode {
@@ -143,16 +150,13 @@ public class Heimdall {
     /// :returns: Decrypted string as plain text
     ///
     public func decrypt(var base64String: String, urlEncoded: Bool = true) -> String? {
-        let key = obtainKey(.Private)!
-        let blockSize = SecKeyGetBlockSize(key)
-        
         if urlEncoded {
             base64String = base64String.stringByReplacingOccurrencesOfString("_", withString: "/")
             base64String = base64String.stringByReplacingOccurrencesOfString("-", withString: "+")
         }
         
         if let encryptedData = NSData(base64EncodedString: base64String, options: .allZeros) {
-            if let data = decrypt(encryptedData, secKey: key, blockSize: blockSize) {
+            if let key = obtainKey(.Private), data = Heimdall.decrypt(encryptedData, secKey: key, blockSize: SecKeyGetBlockSize(key)) {
                 return NSString(data:data, encoding:NSUTF8StringEncoding) as? String
             }
         }
@@ -176,28 +180,29 @@ public class Heimdall {
                 CC_SHA256(messageData.bytes, CC_LONG(messageData.length), UnsafeMutablePointer(hash.mutableBytes))
                 
                 // Sign the hash with the private key
-                let key = obtainKey(.Private)!
-                let blockSize = SecKeyGetBlockSize(key)
-                
-                let hashDataLength = Int(hash.length)
-                var hashData = [UInt8](count: hashDataLength, repeatedValue: 0)
-                hash.getBytes(&hashData, length:hashDataLength)
-                
-                var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
-                var encryptedDataLength = blockSize
-                
-                let result = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1SHA256), hashData, hashDataLength, &encryptedData, &encryptedDataLength)
-                
-                // Base64 of the result
-                let signatureData = NSData(bytes: &encryptedData, length: Int(encryptedDataLength))
-                var signature = signatureData.base64EncodedStringWithOptions(.allZeros)
-                
-                if urlEncode {
-                    signature = signature.stringByReplacingOccurrencesOfString("/", withString: "_")
-                    signature = signature.stringByReplacingOccurrencesOfString("+", withString: "-")
+                if let key = obtainKey(.Private) {
+                    let blockSize = SecKeyGetBlockSize(key)
+                    
+                    let hashDataLength = Int(hash.length)
+                    var hashData = [UInt8](count: hashDataLength, repeatedValue: 0)
+                    hash.getBytes(&hashData, length:hashDataLength)
+                    
+                    var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
+                    var encryptedDataLength = blockSize
+                    
+                    let result = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1SHA256), hashData, hashDataLength, &encryptedData, &encryptedDataLength)
+                    
+                    // Base64 of the result
+                    let signatureData = NSData(bytes: &encryptedData, length: Int(encryptedDataLength))
+                    var signature = signatureData.base64EncodedStringWithOptions(.allZeros)
+                    
+                    if urlEncode {
+                        signature = signature.stringByReplacingOccurrencesOfString("/", withString: "_")
+                        signature = signature.stringByReplacingOccurrencesOfString("+", withString: "-")
+                    }
+                    
+                    return signature
                 }
-                
-                return signature
             }
         }
         
@@ -230,28 +235,71 @@ public class Heimdall {
             let signatureLength = Int(signature.length)
             var signatureData = [UInt8](count: signatureLength, repeatedValue: 0)
             signature.getBytes(&signatureData, length: signatureLength)
-                    
-            let key = obtainKey(.Public)!
-            let blockSize = SecKeyGetBlockSize(key)
             
-            let result =  SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1SHA256), &signedData, Int(CC_SHA256_DIGEST_LENGTH), &signatureData, signatureLength)
-            
-            switch result {
+            if let key = obtainKey(.Public) {
+                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1SHA256), &signedData, Int(CC_SHA256_DIGEST_LENGTH), &signatureData, signatureLength)
+                
+                switch result {
                 case noErr:
                     return true
                 default:
                     return false
+                }
             }
         }
         
         return false
     }
     
-    //
-    //  Private functions
-    //
+    ///
+    /// Remove the key pair this Heimdall represents
+    ///
+    /// :returns: True if remove successfully
+    ///
+    public func destroy() -> Bool {
+        var items = [[String: AnyObject]]()
+        
+        // Private key
+        var query = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
+            String(kSecClass): kSecClassKey as CFStringRef,
+            String(kSecAttrApplicationTag): self.privateTag as CFStringRef]
+        
+        let privateResult = SecItemDelete(query)
+        
+        // Public key
+        query = [
+            String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
+            String(kSecClass): kSecClassKey as CFStringRef,
+            String(kSecAttrApplicationTag): self.tag as CFStringRef]
+        
+        let publicResult = SecItemDelete(query)
+        
+        if privateResult == noErr && publicResult == noErr {
+            return true
+        } else {
+            println("Error deleting items \(privateResult), \(publicResult)")
+        }
+        
+        return false
+    }
     
+    //
+    //  Private helpers
+    //
     private func obtainKey(key: KeyType) -> SecKeyRef? {
+        let tag: String = {
+            switch key {
+            case .Public:
+                return self.tag
+            case .Private:
+                return self.privateTag
+            }
+            }()
+        
+        return Heimdall.obtainKey(tag, keySize: self.keySize)
+    }
+    
+    private func obtainKeyData(key: KeyType) -> NSData? {
         let tag: String = {
             switch key {
             case .Public:
@@ -261,10 +309,18 @@ public class Heimdall {
             }
         }()
         
+        return Heimdall.obtainKeyData(tag, keySize: self.keySize)
+    }
+    
+    //
+    //  Private class functions
+    //
+    
+    private class func obtainKey(tag: String, keySize: Int) -> SecKeyRef? {
         var keyRef: Unmanaged<AnyObject>?
-        var query = [
+        let query = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-            String(kSecAttrKeySizeInBits): self.keySize,
+            String(kSecAttrKeySizeInBits): keySize,
             String(kSecReturnRef): kCFBooleanTrue as CFBoolean,
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef,
@@ -282,20 +338,11 @@ public class Heimdall {
         return result
     }
     
-    private func obtainKeyData(key: KeyType) -> NSData? {
-        let tag: String = {
-            switch key {
-                case .Public:
-                    return self.tag
-                case .Private:
-                    return self.privateTag
-            }
-        }()
-        
+    private class func obtainKeyData(tag: String, keySize: Int) -> NSData? {
         var keyRef: Unmanaged<AnyObject>?
         var query = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-            String(kSecAttrKeySizeInBits): self.keySize,
+            String(kSecAttrKeySizeInBits): keySize,
             String(kSecReturnData): kCFBooleanTrue as CFBoolean,
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef,
@@ -313,14 +360,14 @@ public class Heimdall {
         return result
     }
     
-    private func generateKeyPair(permanent: Bool) -> Bool {
-        let privateAttributes = [String(kSecAttrIsPermanent): permanent,
-                                 String(kSecAttrApplicationTag): self.privateTag]
-        let publicAttributes = [String(kSecAttrIsPermanent): permanent,
-                                String(kSecAttrApplicationTag): self.tag]
+    private class func generateKeyPair(publicTag: String, privateTag: String, keySize: Int) -> (publicKey: SecKeyRef, privateKey: SecKeyRef)? {
+        let privateAttributes = [String(kSecAttrIsPermanent): true,
+                                 String(kSecAttrApplicationTag): privateTag]
+        let publicAttributes = [String(kSecAttrIsPermanent): true,
+                                String(kSecAttrApplicationTag): publicTag]
         
         let pairAttributes = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-                              String(kSecAttrKeySizeInBits): self.keySize,
+                              String(kSecAttrKeySizeInBits): keySize,
                               kSecPublicKeyAttrs.takeUnretainedValue() as! String: publicAttributes,
                               kSecPrivateKeyAttrs.takeUnretainedValue() as! String: privateAttributes]
         
@@ -328,13 +375,17 @@ public class Heimdall {
         var privateRef = Unmanaged<SecKey>?()
         switch SecKeyGeneratePair(pairAttributes, &publicRef, &privateRef) {
             case noErr:
-                return true
+                if let publicKey = publicRef, privateKey = privateRef {
+                    return (publicKey.takeRetainedValue(), privateKey.takeRetainedValue())
+                }
+                
+                return nil
             default:
-                return false
+                return nil
         }
     }
     
-    private func encodeLength(length: Int) -> [CUnsignedChar] {
+    private class func encodeLength(length: Int) -> [CUnsignedChar] {
         if length < 128 {
             return [CUnsignedChar(length)];
         }
@@ -351,11 +402,11 @@ public class Heimdall {
         return result
     }
     
-    private func encrypt(string: String, secKey: SecKeyRef, blockSize: Int) -> NSData? {
+    private class func encrypt(string: String, secKey: SecKeyRef, blockSize: Int) -> NSData? {
         if string.startIndex == string.endIndex {
             return nil
         }
-        
+                
         let length = count(string)
         let blockLength = blockSize - 11
         var range = Range<String.Index>(start: string.startIndex, end: advance(string.startIndex, blockLength, string.endIndex))
@@ -394,7 +445,7 @@ public class Heimdall {
         return result
     }
     
-    private func decrypt(data: NSData, secKey: SecKeyRef, blockSize: Int) -> NSData? {
+    private class func decrypt(data: NSData, secKey: SecKeyRef, blockSize: Int) -> NSData? {
         if data.length < blockSize {
             return nil
         }
