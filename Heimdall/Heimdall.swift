@@ -57,8 +57,7 @@ public class Heimdall {
         // If we already have both keys, then the permanent flag can be ignored
         // otherwise we need to generate (and potentially store) the keys
         if Heimdall.obtainKey(tag, keySize: keySize) == nil || Heimdall.obtainKey(privateTag, keySize: keySize) == nil {
-            let result = Heimdall.generateKeyPair(tag, privateTag: privateTag, keySize: keySize)
-            if result == nil {
+            if Heimdall.generateKeyPair(tag, privateTag: privateTag, keySize: keySize) == nil {
                 return nil
             }
         }
@@ -184,24 +183,27 @@ public class Heimdall {
                     let blockSize = SecKeyGetBlockSize(key)
                     
                     let hashDataLength = Int(hash.length)
-                    var hashData = [UInt8](count: hashDataLength, repeatedValue: 0)
-                    hash.getBytes(&hashData, length:hashDataLength)
+                    let hashData = UnsafePointer<UInt8>(hash.bytes)
                     
-                    var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
-                    var encryptedDataLength = blockSize
-                    
-                    let result = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1), hashData, hashDataLength, &encryptedData, &encryptedDataLength)
-                    
-                    // Base64 of the result
-                    let signatureData = NSData(bytes: &encryptedData, length: Int(encryptedDataLength))
-                    var signature = signatureData.base64EncodedStringWithOptions(.allZeros)
-                    
-                    if urlEncode {
-                        signature = signature.stringByReplacingOccurrencesOfString("/", withString: "_")
-                        signature = signature.stringByReplacingOccurrencesOfString("+", withString: "-")
+                    if let result = NSMutableData(length: Int(blockSize)) {
+                        let encryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
+                        var encryptedDataLength = blockSize
+                        
+                        let status = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1), hashData, hashDataLength, encryptedData, &encryptedDataLength)
+                        
+                        if status == noErr {
+                            // Create Base64 string of the result
+                            result.length = encryptedDataLength
+                            var signature = result.base64EncodedStringWithOptions(.allZeros)
+                            
+                            if urlEncode {
+                                signature = signature.stringByReplacingOccurrencesOfString("/", withString: "_")
+                                signature = signature.stringByReplacingOccurrencesOfString("+", withString: "-")
+                            }
+                            
+                            return signature
+                        }
                     }
-                    
-                    return signature
                 }
             }
         }
@@ -229,15 +231,13 @@ public class Heimdall {
                 hashData = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
             
             CC_SHA256(messageData.bytes, CC_LONG(messageData.length), UnsafeMutablePointer(hashData.mutableBytes))
-            var signedData = [UInt8](count: Int(CC_SHA256_DIGEST_LENGTH), repeatedValue: 0)
-            hashData.getBytes(&signedData, length:Int(CC_SHA256_DIGEST_LENGTH))
             
+            let signedData = UnsafePointer<UInt8>(hashData.bytes)
             let signatureLength = Int(signature.length)
-            var signatureData = [UInt8](count: signatureLength, repeatedValue: 0)
-            signature.getBytes(&signatureData, length: signatureLength)
+            let signatureData = UnsafePointer<UInt8>(signature.bytes)
             
             if let key = obtainKey(.Public) {
-                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1), &signedData, Int(CC_SHA256_DIGEST_LENGTH), &signatureData, signatureLength)
+                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1), signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
                 
                 switch result {
                 case noErr:
