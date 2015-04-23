@@ -118,23 +118,50 @@ public class Heimdall {
     }
     
     ///
+    /// Encrypt an arbitrary string using AES256, the key for which
+    /// is generated for a particular process and then encrypted with the
+    /// public key from the RSA pair and prepended to the resulting data
+    ///
+    /// Result is a combination, where the first
     /// Encrypt an arbitrary string using the public key of the pair
     ///
     /// :param: string      Input string to be encrypted
     /// :param: urlEncode   If true, resulting Base64 string is URL encoded
     ///
-    /// :returns: The encrypted version of the string, as Base64 string
+    /// :returns: The encrypted data, as Base64 string. First
     ///
     public func encrypt(string: String, urlEncode: Bool = false) -> String? {
-        if let key = obtainKey(.Public), data = Heimdall.encrypt(string, secKey: key, blockSize: SecKeyGetBlockSize(key)) {
-            var result = data.base64EncodedStringWithOptions(.allZeros)
+        // Generate a key and encrypt the message with said key
+        if let key = Heimdall.generateSymmetricKey(Int(kCCKeySizeAES256)), encrypted = Heimdall.encrypt(string, key: key) {
+            // Final resulting data
+            let result = NSMutableData()
             
-            if urlEncode {
-                result = result.stringByReplacingOccurrencesOfString("/", withString: "_")
-                result = result.stringByReplacingOccurrencesOfString("+", withString: "-")
+            // Encrypt the AES key with our public key
+            if let publicKey = obtainKey(.Public) {
+                let blockSize = SecKeyGetBlockSize(publicKey)
+                var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
+                var encryptedLength = blockSize
+                var data = UnsafePointer<UInt8>(key.bytes)
+                
+                switch SecKeyEncrypt(publicKey, SecPadding(kSecPaddingPKCS1), data, Int(key.length), &encryptedData, &encryptedLength) {
+                case noErr:
+                    result.appendBytes(&encryptedData, length: encryptedLength)
+                default:
+                    return nil
+                }
             }
             
-            return result
+            result.appendData(encrypted)
+            
+            // Convert to a string
+            var resultString = result.base64EncodedStringWithOptions(.allZeros)
+            
+            if urlEncode {
+                resultString = resultString.stringByReplacingOccurrencesOfString("/", withString: "_")
+                resultString = resultString.stringByReplacingOccurrencesOfString("+", withString: "-")
+            }
+            
+            return resultString
         }
         
         return nil
@@ -154,9 +181,29 @@ public class Heimdall {
             base64String = base64String.stringByReplacingOccurrencesOfString("-", withString: "+")
         }
         
-        if let encryptedData = NSData(base64EncodedString: base64String, options: .allZeros) {
-            if let key = obtainKey(.Private), data = Heimdall.decrypt(encryptedData, secKey: key, blockSize: SecKeyGetBlockSize(key)) {
-                return NSString(data:data, encoding:NSUTF8StringEncoding) as? String
+        // Convert to data and grab our private key
+        if let data = NSData(base64EncodedString: base64String, options: .allZeros), privateKey = obtainKey(.Private) {
+            // First block size should be the encrypted AES key
+            let blockSize = SecKeyGetBlockSize(privateKey)
+            let keyData = data.subdataWithRange(NSRange(location: 0, length: blockSize))
+            let messageData = data.subdataWithRange(NSRange(location: blockSize, length: data.length - blockSize))
+            
+            // Decrypt the key
+            if let decryptedKeyData = NSMutableData(length: blockSize) {
+                let encryptedData = UnsafePointer<UInt8>(keyData.bytes)
+                var decryptedData = UnsafeMutablePointer<UInt8>(decryptedKeyData.mutableBytes)
+                var decryptedLength = blockSize
+                
+                let keyStatus = SecKeyDecrypt(privateKey, SecPadding(kSecPaddingPKCS1), encryptedData, keyData.length, decryptedData, &decryptedLength)
+                
+                if keyStatus == noErr {
+                    decryptedKeyData.length = Int(decryptedLength)
+                    
+                    // Decrypt the message
+                    if let message = Heimdall.decrypt(messageData, key: decryptedKeyData) {
+                        return NSString(data: message, encoding: NSUTF8StringEncoding) as? String
+                    }
+                }
             }
         }
         
@@ -276,8 +323,6 @@ public class Heimdall {
         
         if privateResult == noErr && publicResult == noErr {
             return true
-        } else {
-            println("Error deleting items \(privateResult), \(publicResult)")
         }
         
         return false
@@ -385,6 +430,13 @@ public class Heimdall {
         }
     }
     
+    private class func generateSymmetricKey(keySize: Int) -> NSData? {
+        var result = [UInt8](count: keySize, repeatedValue: 0)
+        SecRandomCopyBytes(kSecRandomDefault, keySize, &result)
+        
+        return NSData(bytes: result, length: keySize)
+    }
+    
     private class func encodeLength(length: Int) -> [CUnsignedChar] {
         if length < 128 {
             return [CUnsignedChar(length)];
@@ -402,77 +454,53 @@ public class Heimdall {
         return result
     }
     
-    private class func encrypt(string: String, secKey: SecKeyRef, blockSize: Int) -> NSData? {
-        if string.startIndex == string.endIndex {
-            return nil
-        }
-                
-        let length = count(string)
-        let blockLength = blockSize - 11
-        var range = Range<String.Index>(start: string.startIndex, end: advance(string.startIndex, blockLength, string.endIndex))
-        
-        var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
-        var encryptedLength = blockSize
-        
-        let result = NSMutableData()
-        
-        // First range is always there
-        let substring = string.substringWithRange(range)
-        var data = [UInt8](substring.utf8)
-        
-        switch SecKeyEncrypt(secKey, SecPadding(kSecPaddingPKCS1), &data, distance(range.startIndex, range.endIndex), &encryptedData, &encryptedLength) {
-            case noErr:
-                result.appendBytes(&encryptedData, length: encryptedLength)
-            default:
-                return nil
-        }
-        
-        // Remaining ranges are only accessible if we have not yet reached the end of the string
-        while range.endIndex != string.endIndex {
-            range = Range<String.Index>(start: range.endIndex, end: advance(range.endIndex, blockLength, string.endIndex))
-
-            let substring = string.substringWithRange(range)
-            var data = [UInt8](substring.utf8)
+    private class func encrypt(string: String, key: NSData) -> NSData? {
+        if let stringData = (string as NSString).dataUsingEncoding(NSUTF8StringEncoding) {
+            let data = UnsafePointer<UInt8>(stringData.bytes)
+            let dataLength = stringData.length
             
-            switch SecKeyEncrypt(secKey, SecPadding(kSecPaddingPKCS1), &data, distance(range.startIndex, range.endIndex), &encryptedData, &encryptedLength) {
-                case noErr:
-                    result.appendBytes(&encryptedData, length: encryptedLength)
-                default:
-                    return nil
+            if let result = NSMutableData(length: dataLength + kCCBlockSizeAES128) {
+                let keyData = UnsafePointer<UInt8>(key.bytes)
+                let keyLength = size_t(key.length)
+                
+                var encryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
+                let encryptedDataLength = size_t(result.length)
+                
+                var encryptedLength: size_t = 0
+                
+                let status = CCCrypt(CCOperation(kCCEncrypt), CCAlgorithm(kCCAlgorithmAES128), CCOptions(kCCOptionECBMode + kCCOptionPKCS7Padding), keyData, keyLength, nil, data, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
+                
+                if UInt32(status) == UInt32(kCCSuccess) {
+                    result.length = Int(encryptedLength)
+                    return result
+                }
             }
         }
         
-        return result
+        return nil
     }
     
-    private class func decrypt(data: NSData, secKey: SecKeyRef, blockSize: Int) -> NSData? {
-        if data.length < blockSize {
-            return nil
-        }
+    private class func decrypt(data: NSData, key: NSData) -> NSData? {
+        let encryptedData = UnsafePointer<UInt8>(data.bytes)
+        let encryptedDataLength = data.length
         
-        let result = NSMutableData()
-        
-        let encryptedDataLength: Int = blockSize
-        var range = NSRange(location: 0, length: blockSize)
-        var encryptedData = [UInt8](count: encryptedDataLength, repeatedValue: 0)
-
-        var decryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
-        var decryptedDataLength = blockSize
-        
-        while NSMaxRange(range) <= data.length {
-            data.getBytes(&encryptedData, range: range)
+        if let result = NSMutableData(length: encryptedDataLength) {
+            let keyData = UnsafePointer<UInt8>(key.bytes)
+            let keyLength = size_t(key.length)
             
-            switch SecKeyDecrypt(secKey, SecPadding(kSecPaddingPKCS1), encryptedData, range.length, &decryptedData, &decryptedDataLength) {
-                case noErr:
-                    result.appendBytes(&decryptedData, length: decryptedDataLength)
-                default:
-                    return nil
+            var decryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
+            let decryptedDataLength = size_t(result.length)
+            
+            var decryptedLength: size_t = 0
+            
+            let status = CCCrypt(CCOperation(kCCDecrypt), CCAlgorithm(kCCAlgorithmAES128), CCOptions(kCCOptionECBMode + kCCOptionPKCS7Padding), keyData, keyLength, nil, encryptedData, encryptedDataLength, decryptedData, decryptedDataLength, &decryptedLength)
+            
+            if UInt32(status) == UInt32(kCCSuccess) {
+                result.length = Int(decryptedLength)
+                return result
             }
-            
-            let end = range.location + range.length
-            range = NSRange(location: end, length: blockSize)
         }
-        
-        return result
+
+        return nil
     }
 }
