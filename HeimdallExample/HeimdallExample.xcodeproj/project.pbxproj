@@ -1,0 +1,520 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		8E05A4BF1AE91F8C0047E970 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E05A4BE1AE91F8C0047E970 /* AppDelegate.swift */; };
+		8E05A4C11AE91F8C0047E970 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E05A4C01AE91F8C0047E970 /* ViewController.swift */; };
+		8E05A4C41AE91F8C0047E970 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C21AE91F8C0047E970 /* Main.storyboard */; };
+		8E05A4C61AE91F8C0047E970 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C51AE91F8C0047E970 /* Images.xcassets */; };
+		8E05A4C91AE91F8C0047E970 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C71AE91F8C0047E970 /* LaunchScreen.xib */; };
+		8E05A4D51AE91F8C0047E970 /* HeimdallExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E05A4D41AE91F8C0047E970 /* HeimdallExampleTests.swift */; };
+		8E05A4ED1AE923230047E970 /* Heimdall.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E05A4E51AE91F9C0047E970 /* Heimdall.framework */; };
+		8E05A4EE1AE923230047E970 /* Heimdall.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8E05A4E51AE91F9C0047E970 /* Heimdall.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		8E05A4CF1AE91F8C0047E970 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E05A4B11AE91F8C0047E970 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E05A4B81AE91F8C0047E970;
+			remoteInfo = HeimdallExample;
+		};
+		8E05A4E41AE91F9C0047E970 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E05A4DE1AE91F9C0047E970 /* Heimdall.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8E866C541AE8FBEC005682A2;
+			remoteInfo = Heimdall;
+		};
+		8E05A4E61AE91F9C0047E970 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E05A4DE1AE91F9C0047E970 /* Heimdall.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8E866C5F1AE8FBEC005682A2;
+			remoteInfo = HeimdallTests;
+		};
+		8E05A4E81AE91F9C0047E970 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E05A4DE1AE91F9C0047E970 /* Heimdall.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8E866CC51AE8FE7D005682A2;
+			remoteInfo = CommonCrypto;
+		};
+		8E05A4EF1AE923230047E970 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E05A4DE1AE91F9C0047E970 /* Heimdall.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E866C531AE8FBEC005682A2;
+			remoteInfo = Heimdall;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		8E05A4F11AE923230047E970 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				8E05A4EE1AE923230047E970 /* Heimdall.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		8E05A4B91AE91F8C0047E970 /* HeimdallExample.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = HeimdallExample.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E05A4BD1AE91F8C0047E970 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8E05A4BE1AE91F8C0047E970 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8E05A4C01AE91F8C0047E970 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		8E05A4C31AE91F8C0047E970 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		8E05A4C51AE91F8C0047E970 /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Images.xcassets; sourceTree = "<group>"; };
+		8E05A4C81AE91F8C0047E970 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/LaunchScreen.xib; sourceTree = "<group>"; };
+		8E05A4CE1AE91F8C0047E970 /* HeimdallExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HeimdallExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E05A4D31AE91F8C0047E970 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8E05A4D41AE91F8C0047E970 /* HeimdallExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeimdallExampleTests.swift; sourceTree = "<group>"; };
+		8E05A4DE1AE91F9C0047E970 /* Heimdall.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Heimdall.xcodeproj; path = ../Heimdall.xcodeproj; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8E05A4B61AE91F8C0047E970 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E05A4ED1AE923230047E970 /* Heimdall.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E05A4CB1AE91F8C0047E970 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		8E05A4B01AE91F8C0047E970 = {
+			isa = PBXGroup;
+			children = (
+				8E05A4BB1AE91F8C0047E970 /* HeimdallExample */,
+				8E05A4D11AE91F8C0047E970 /* HeimdallExampleTests */,
+				8E05A4BA1AE91F8C0047E970 /* Products */,
+				8E05A4DE1AE91F9C0047E970 /* Heimdall.xcodeproj */,
+			);
+			sourceTree = "<group>";
+		};
+		8E05A4BA1AE91F8C0047E970 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8E05A4B91AE91F8C0047E970 /* HeimdallExample.app */,
+				8E05A4CE1AE91F8C0047E970 /* HeimdallExampleTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		8E05A4BB1AE91F8C0047E970 /* HeimdallExample */ = {
+			isa = PBXGroup;
+			children = (
+				8E05A4BE1AE91F8C0047E970 /* AppDelegate.swift */,
+				8E05A4C01AE91F8C0047E970 /* ViewController.swift */,
+				8E05A4C21AE91F8C0047E970 /* Main.storyboard */,
+				8E05A4C51AE91F8C0047E970 /* Images.xcassets */,
+				8E05A4C71AE91F8C0047E970 /* LaunchScreen.xib */,
+				8E05A4BC1AE91F8C0047E970 /* Supporting Files */,
+			);
+			path = HeimdallExample;
+			sourceTree = "<group>";
+		};
+		8E05A4BC1AE91F8C0047E970 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				8E05A4BD1AE91F8C0047E970 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		8E05A4D11AE91F8C0047E970 /* HeimdallExampleTests */ = {
+			isa = PBXGroup;
+			children = (
+				8E05A4D41AE91F8C0047E970 /* HeimdallExampleTests.swift */,
+				8E05A4D21AE91F8C0047E970 /* Supporting Files */,
+			);
+			path = HeimdallExampleTests;
+			sourceTree = "<group>";
+		};
+		8E05A4D21AE91F8C0047E970 /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				8E05A4D31AE91F8C0047E970 /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+		8E05A4DF1AE91F9C0047E970 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				8E05A4E51AE91F9C0047E970 /* Heimdall.framework */,
+				8E05A4E71AE91F9C0047E970 /* HeimdallTests.xctest */,
+				8E05A4E91AE91F9C0047E970 /* CommonCrypto.framework */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		8E05A4B81AE91F8C0047E970 /* HeimdallExample */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8E05A4D81AE91F8C0047E970 /* Build configuration list for PBXNativeTarget "HeimdallExample" */;
+			buildPhases = (
+				8E05A4B51AE91F8C0047E970 /* Sources */,
+				8E05A4B61AE91F8C0047E970 /* Frameworks */,
+				8E05A4B71AE91F8C0047E970 /* Resources */,
+				8E05A4F11AE923230047E970 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8E05A4F01AE923230047E970 /* PBXTargetDependency */,
+			);
+			name = HeimdallExample;
+			productName = HeimdallExample;
+			productReference = 8E05A4B91AE91F8C0047E970 /* HeimdallExample.app */;
+			productType = "com.apple.product-type.application";
+		};
+		8E05A4CD1AE91F8C0047E970 /* HeimdallExampleTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8E05A4DB1AE91F8C0047E970 /* Build configuration list for PBXNativeTarget "HeimdallExampleTests" */;
+			buildPhases = (
+				8E05A4CA1AE91F8C0047E970 /* Sources */,
+				8E05A4CB1AE91F8C0047E970 /* Frameworks */,
+				8E05A4CC1AE91F8C0047E970 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				8E05A4D01AE91F8C0047E970 /* PBXTargetDependency */,
+			);
+			name = HeimdallExampleTests;
+			productName = HeimdallExampleTests;
+			productReference = 8E05A4CE1AE91F8C0047E970 /* HeimdallExampleTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		8E05A4B11AE91F8C0047E970 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0630;
+				ORGANIZATIONNAME = "Henri Normak";
+				TargetAttributes = {
+					8E05A4B81AE91F8C0047E970 = {
+						CreatedOnToolsVersion = 6.3;
+					};
+					8E05A4CD1AE91F8C0047E970 = {
+						CreatedOnToolsVersion = 6.3;
+						TestTargetID = 8E05A4B81AE91F8C0047E970;
+					};
+				};
+			};
+			buildConfigurationList = 8E05A4B41AE91F8C0047E970 /* Build configuration list for PBXProject "HeimdallExample" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8E05A4B01AE91F8C0047E970;
+			productRefGroup = 8E05A4BA1AE91F8C0047E970 /* Products */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 8E05A4DF1AE91F9C0047E970 /* Products */;
+					ProjectRef = 8E05A4DE1AE91F9C0047E970 /* Heimdall.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				8E05A4B81AE91F8C0047E970 /* HeimdallExample */,
+				8E05A4CD1AE91F8C0047E970 /* HeimdallExampleTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		8E05A4E51AE91F9C0047E970 /* Heimdall.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = Heimdall.framework;
+			remoteRef = 8E05A4E41AE91F9C0047E970 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8E05A4E71AE91F9C0047E970 /* HeimdallTests.xctest */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.cfbundle;
+			path = HeimdallTests.xctest;
+			remoteRef = 8E05A4E61AE91F9C0047E970 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8E05A4E91AE91F9C0047E970 /* CommonCrypto.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CommonCrypto.framework;
+			remoteRef = 8E05A4E81AE91F9C0047E970 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		8E05A4B71AE91F8C0047E970 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E05A4C41AE91F8C0047E970 /* Main.storyboard in Resources */,
+				8E05A4C91AE91F8C0047E970 /* LaunchScreen.xib in Resources */,
+				8E05A4C61AE91F8C0047E970 /* Images.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E05A4CC1AE91F8C0047E970 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		8E05A4B51AE91F8C0047E970 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E05A4C11AE91F8C0047E970 /* ViewController.swift in Sources */,
+				8E05A4BF1AE91F8C0047E970 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E05A4CA1AE91F8C0047E970 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E05A4D51AE91F8C0047E970 /* HeimdallExampleTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		8E05A4D01AE91F8C0047E970 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8E05A4B81AE91F8C0047E970 /* HeimdallExample */;
+			targetProxy = 8E05A4CF1AE91F8C0047E970 /* PBXContainerItemProxy */;
+		};
+		8E05A4F01AE923230047E970 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Heimdall;
+			targetProxy = 8E05A4EF1AE923230047E970 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		8E05A4C21AE91F8C0047E970 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8E05A4C31AE91F8C0047E970 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		8E05A4C71AE91F8C0047E970 /* LaunchScreen.xib */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8E05A4C81AE91F8C0047E970 /* Base */,
+			);
+			name = LaunchScreen.xib;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		8E05A4D61AE91F8C0047E970 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8E05A4D71AE91F8C0047E970 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.3;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		8E05A4D91AE91F8C0047E970 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = HeimdallExample/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		8E05A4DA1AE91F8C0047E970 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				INFOPLIST_FILE = HeimdallExample/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		8E05A4DC1AE91F8C0047E970 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = HeimdallExampleTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HeimdallExample.app/HeimdallExample";
+			};
+			name = Debug;
+		};
+		8E05A4DD1AE91F8C0047E970 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(SDKROOT)/Developer/Library/Frameworks",
+					"$(inherited)",
+				);
+				INFOPLIST_FILE = HeimdallExampleTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HeimdallExample.app/HeimdallExample";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8E05A4B41AE91F8C0047E970 /* Build configuration list for PBXProject "HeimdallExample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E05A4D61AE91F8C0047E970 /* Debug */,
+				8E05A4D71AE91F8C0047E970 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8E05A4D81AE91F8C0047E970 /* Build configuration list for PBXNativeTarget "HeimdallExample" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E05A4D91AE91F8C0047E970 /* Debug */,
+				8E05A4DA1AE91F8C0047E970 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+		8E05A4DB1AE91F8C0047E970 /* Build configuration list for PBXNativeTarget "HeimdallExampleTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E05A4DC1AE91F8C0047E970 /* Debug */,
+				8E05A4DD1AE91F8C0047E970 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 8E05A4B11AE91F8C0047E970 /* Project object */;
+}
