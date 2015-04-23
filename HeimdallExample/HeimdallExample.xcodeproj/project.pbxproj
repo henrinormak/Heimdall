@@ -13,7 +13,6 @@
 		8E05A4C61AE91F8C0047E970 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C51AE91F8C0047E970 /* Images.xcassets */; };
 		8E05A4C91AE91F8C0047E970 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C71AE91F8C0047E970 /* LaunchScreen.xib */; };
 		8E05A4D51AE91F8C0047E970 /* HeimdallExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E05A4D41AE91F8C0047E970 /* HeimdallExampleTests.swift */; };
-		8E05A4ED1AE923230047E970 /* Heimdall.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E05A4E51AE91F9C0047E970 /* Heimdall.framework */; };
 		8E05A4EE1AE923230047E970 /* Heimdall.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8E05A4E51AE91F9C0047E970 /* Heimdall.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
@@ -88,7 +87,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8E05A4ED1AE923230047E970 /* Heimdall.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -505,6 +503,7 @@
 				8E05A4DA1AE91F8C0047E970 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		8E05A4DB1AE91F8C0047E970 /* Build configuration list for PBXNativeTarget "HeimdallExampleTests" */ = {
 			isa = XCConfigurationList;
@@ -513,6 +512,7 @@
 				8E05A4DD1AE91F8C0047E970 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
