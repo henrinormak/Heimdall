@@ -65,50 +65,11 @@ public class Heimdall {
     //
     
     ///
-    /// :returns: Public key in X.509 format as a base64 string (URL safe)
+    /// :returns: Public key in X.509 format
     ///
-    public func X509PublicKey() -> NSString? {
+    public func X509PublicKey() -> NSData? {
         if let key = obtainKeyData(.Public) {
-            let result = NSMutableData()
-            
-            let encodingLength: Int = {
-                if key.length + 1 < 128 {
-                    return 1
-                } else {
-                    return ((key.length + 1) / 256) + 2
-                }
-                }()
-            
-            let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-                0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
-            
-            var builder: [CUnsignedChar] = []
-            
-            // ASN.1 SEQUENCE
-            builder.append(0x30)
-            
-            // Overall size, made of OID + bitstring encoding + actual key
-            let size = OID.count + 2 + encodingLength + key.length
-            let encodedSize = Heimdall.encodeLength(size)
-            builder.extend(encodedSize)
-            result.appendBytes(builder, length: builder.count)
-            result.appendBytes(OID, length: OID.count)
-            builder.removeAll(keepCapacity: false)
-            
-            builder.append(0x03)
-            builder.extend(Heimdall.encodeLength(key.length + 1))
-            builder.append(0x00)
-            result.appendBytes(builder, length: builder.count)
-            
-            // Actual key bytes
-            result.appendData(key)
-            
-            // Convert to Base64 and make safe for URLs
-            var string = result.base64EncodedStringWithOptions(.allZeros)
-            string = string.stringByReplacingOccurrencesOfString("/", withString: "_")
-            string = string.stringByReplacingOccurrencesOfString("+", withString: "-")
-            
-            return string
+            return Heimdall.addX509Header(key)
         }
         
         return nil
@@ -412,6 +373,107 @@ public class Heimdall {
         return result
     }
     
+    private class func addX509Header(data: NSData) -> NSData {
+        let result = NSMutableData()
+        
+        let encodingLength: Int = {
+            if data.length + 1 < 128 {
+                return 1
+            } else {
+                return ((data.length + 1) / 256) + 2
+            }
+            }()
+        
+        func encodeLength(length: Int) -> [CUnsignedChar] {
+            if length < 128 {
+                return [CUnsignedChar(length)];
+            }
+            
+            var i = (length / 256) + 1
+            var len = length
+            var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
+            
+            for (var j = 0; j < i; j++) {
+                result.insert(CUnsignedChar(len & 0xFF), atIndex: 1)
+                len = len >> 8
+            }
+            
+            return result
+        }
+        
+        let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+            0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
+        
+        var builder: [CUnsignedChar] = []
+        
+        // ASN.1 SEQUENCE
+        builder.append(0x30)
+        
+        // Overall size, made of OID + bitstring encoding + actual key
+        let size = OID.count + 2 + encodingLength + data.length
+        let encodedSize = encodeLength(size)
+        builder.extend(encodedSize)
+        result.appendBytes(builder, length: builder.count)
+        result.appendBytes(OID, length: OID.count)
+        builder.removeAll(keepCapacity: false)
+        
+        builder.append(0x03)
+        builder.extend(encodeLength(data.length + 1))
+        builder.append(0x00)
+        result.appendBytes(builder, length: builder.count)
+        
+        // Actual key bytes
+        result.appendData(data)
+        
+        return result as NSData
+    }
+    
+    private class func stripX509Header(data: NSData) -> NSData {
+        var bytes = [CUnsignedChar](count: data.length, repeatedValue: 0)
+        data.getBytes(&bytes, length:data.length)
+        
+        var range = NSRange(location: 0, length: data.length)
+        var offset = 0
+        
+        if bytes[offset++] == 0x30 {
+            if bytes[offset] > 0x80 {
+                offset += Int(bytes[offset]) - 0x80 + 1
+            } else {
+                offset++
+            }
+            
+            let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+                0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
+            let slice: [CUnsignedChar] = Array(bytes[offset...(offset + OID.count)])
+            
+            if slice == OID {
+                offset += OID.count
+                
+                if bytes[offset++] != 0x03 {
+                    return data
+                }
+                
+                if bytes[offset] > 0x80 {
+                    offset += Int(bytes[offset]) - 0x80 + 1
+                } else {
+                    offset++
+                }
+                
+                if bytes[offset++] != 0x00 {
+                    return data
+                }
+                
+                range.location += offset
+                range.length -= offset
+            } else {
+                return data
+            }
+        }
+        
+        return data.subdataWithRange(range)
+    }
+    
+    
     private class func generateKeyPair(publicTag: String, privateTag: String, keySize: Int) -> (publicKey: SecKeyRef, privateKey: SecKeyRef)? {
         let privateAttributes = [String(kSecAttrIsPermanent): true,
                                  String(kSecAttrApplicationTag): privateTag]
@@ -444,22 +506,6 @@ public class Heimdall {
         return NSData(bytes: result, length: keySize)
     }
     
-    private class func encodeLength(length: Int) -> [CUnsignedChar] {
-        if length < 128 {
-            return [CUnsignedChar(length)];
-        }
-        
-        var i = (length / 256) + 1
-        var len = length
-        var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
-        
-        for (var j = 0; j < i; j++) {
-            result.insert(CUnsignedChar(len & 0xFF), atIndex: 1)
-            len = len >> 8
-        }
-        
-        return result
-    }
     
     private class func encrypt(string: String, key: NSData) -> NSData? {
         if let stringData = (string as NSString).dataUsingEncoding(NSUTF8StringEncoding) {
