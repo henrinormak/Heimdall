@@ -47,28 +47,30 @@ public class Heimdall {
     /// Create an instance with data for the public key,
     /// the keychain is updated with the tag given (call .destroy() to remove)
     ///
+    /// :params: publicTag      Tag of the public key, keychain is checked for existing key (updated if data 
+    /// provided is non-nil and does not match)
+    ///
     /// :params: publicKeyData  Bits of the public key, can include the X509 header (will be stripped)
     ///
     /// :returns: Heimdall instance that can handle only public key operations
     ///
-    public convenience init?(var publicKeyData: NSData, tag: String) {
-        // Strip any X509 headers
-        publicKeyData = Heimdall.stripX509Header(publicKeyData)
-        var keySize = publicKeyData.length * 8
-        
-        if let existingData = Heimdall.obtainKeyData(tag) {
-            if !existingData.isEqualToData(publicKeyData) {
-                // Existing data is not the same, so update it with the new provided data
-                Heimdall.updateKey(tag, keySize: nil, data: publicKeyData)
+    public convenience init?(publicTag: String, var publicKeyData: NSData? = nil) {
+        if let existingData = Heimdall.obtainKeyData(publicTag) {
+            var keySize = existingData.length * 8
+            
+            // Compare agains the new data (optional)
+            if let newData = publicKeyData?.dataByStrippingX509Header() where !existingData.isEqualToData(newData) {
+                Heimdall.updateKey(publicTag, keySize: nil, data: newData)
+                keySize = newData.length * 8
             }
             
-            keySize = existingData.length * 8
-            self.init(scope: ScopeOptions.PublicKey, publicTag: tag, privateTag: nil, keySize: keySize)
-        } else if let key = Heimdall.insertPublicKey(tag, data: publicKeyData) {
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, keySize: keySize)
+        } else if let data = publicKeyData?.dataByStrippingX509Header(), key = Heimdall.insertPublicKey(publicTag, data: data) {
             // Successfully created the new key
-            self.init(scope: ScopeOptions.PublicKey, publicTag: tag, privateTag: nil, keySize: keySize)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, keySize: data.length * 8)
         } else {
-            self.init(scope: ScopeOptions.PublicKey, publicTag: tag, privateTag: nil, keySize: keySize)
+            // Call the init, although returning nil
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, keySize: 0)
             return nil
         }
     }
@@ -79,8 +81,8 @@ public class Heimdall {
     ///
     /// :returns: Heimdall instance that can handle both private and public key operations
     ///
-    public convenience init?(tag: String, keySize: Int = 2048) {
-        self.init(publicTag: tag, privateTag: tag + ".private", keySize: keySize)
+    public convenience init?(tagPrefix: String, keySize: Int = 2048) {
+        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize)
     }
     
     ///
@@ -115,7 +117,7 @@ public class Heimdall {
     ///
     public func X509PublicKey() -> NSData? {
         if let key = obtainKeyData(.Public) {
-            return Heimdall.addX509Header(key)
+            return key.dataByPrependingX509Header()
         }
         
         return nil
@@ -464,107 +466,6 @@ public class Heimdall {
     }
     
     
-    private class func addX509Header(data: NSData) -> NSData {
-        let result = NSMutableData()
-        
-        let encodingLength: Int = {
-            if data.length + 1 < 128 {
-                return 1
-            } else {
-                return ((data.length + 1) / 256) + 2
-            }
-            }()
-        
-        func encodeLength(length: Int) -> [CUnsignedChar] {
-            if length < 128 {
-                return [CUnsignedChar(length)];
-            }
-            
-            var i = (length / 256) + 1
-            var len = length
-            var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
-            
-            for (var j = 0; j < i; j++) {
-                result.insert(CUnsignedChar(len & 0xFF), atIndex: 1)
-                len = len >> 8
-            }
-            
-            return result
-        }
-        
-        let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-            0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
-        
-        var builder: [CUnsignedChar] = []
-        
-        // ASN.1 SEQUENCE
-        builder.append(0x30)
-        
-        // Overall size, made of OID + bitstring encoding + actual key
-        let size = OID.count + 2 + encodingLength + data.length
-        let encodedSize = encodeLength(size)
-        builder.extend(encodedSize)
-        result.appendBytes(builder, length: builder.count)
-        result.appendBytes(OID, length: OID.count)
-        builder.removeAll(keepCapacity: false)
-        
-        builder.append(0x03)
-        builder.extend(encodeLength(data.length + 1))
-        builder.append(0x00)
-        result.appendBytes(builder, length: builder.count)
-        
-        // Actual key bytes
-        result.appendData(data)
-        
-        return result as NSData
-    }
-    
-    private class func stripX509Header(data: NSData) -> NSData {
-        var bytes = [CUnsignedChar](count: data.length, repeatedValue: 0)
-        data.getBytes(&bytes, length:data.length)
-        
-        var range = NSRange(location: 0, length: data.length)
-        var offset = 0
-        
-        if bytes[offset++] == 0x30 {
-            if bytes[offset] > 0x80 {
-                offset += Int(bytes[offset]) - 0x80 + 1
-            } else {
-                offset++
-            }
-            
-            let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
-                0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
-            let slice: [CUnsignedChar] = Array(bytes[offset...(offset + OID.count)])
-            
-            if slice == OID {
-                offset += OID.count
-                
-                if bytes[offset++] != 0x03 {
-                    return data
-                }
-                
-                if bytes[offset] > 0x80 {
-                    offset += Int(bytes[offset]) - 0x80 + 1
-                } else {
-                    offset++
-                }
-                
-                if bytes[offset++] != 0x00 {
-                    return data
-                }
-                
-                range.location += offset
-                range.length -= offset
-            } else {
-                return data
-            }
-        }
-        
-        return data.subdataWithRange(range)
-    }
-    
-    
     private class func generateKeyPair(publicTag: String, privateTag: String, keySize: Int) -> (publicKey: SecKeyRef, privateKey: SecKeyRef)? {
         let privateAttributes = [String(kSecAttrIsPermanent): true,
                                  String(kSecAttrApplicationTag): privateTag]
@@ -648,3 +549,110 @@ public class Heimdall {
         return nil
     }
 }
+
+
+///
+/// Manipulating data to include/exclude X509 headers
+///
+private extension NSData {
+    func dataByPrependingX509Header() -> NSData {
+        let result = NSMutableData()
+        
+        let encodingLength: Int = {
+            if self.length + 1 < 128 {
+                return 1
+            } else {
+                return ((self.length + 1) / 256) + 2
+            }
+            }()
+        
+        func encodeLength(length: Int) -> [CUnsignedChar] {
+            if length < 128 {
+                return [CUnsignedChar(length)];
+            }
+            
+            var i = (length / 256) + 1
+            var len = length
+            var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
+            
+            for (var j = 0; j < i; j++) {
+                result.insert(CUnsignedChar(len & 0xFF), atIndex: 1)
+                len = len >> 8
+            }
+            
+            return result
+        }
+        
+        let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+            0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
+        
+        var builder: [CUnsignedChar] = []
+        
+        // ASN.1 SEQUENCE
+        builder.append(0x30)
+        
+        // Overall size, made of OID + bitstring encoding + actual key
+        let size = OID.count + 2 + encodingLength + self.length
+        let encodedSize = encodeLength(size)
+        builder.extend(encodedSize)
+        result.appendBytes(builder, length: builder.count)
+        result.appendBytes(OID, length: OID.count)
+        builder.removeAll(keepCapacity: false)
+        
+        builder.append(0x03)
+        builder.extend(encodeLength(self.length + 1))
+        builder.append(0x00)
+        result.appendBytes(builder, length: builder.count)
+        
+        // Actual key bytes
+        result.appendData(self)
+        
+        return result as NSData
+    }
+    
+    func dataByStrippingX509Header() -> NSData {
+        var bytes = [CUnsignedChar](count: self.length, repeatedValue: 0)
+        self.getBytes(&bytes, length:self.length)
+        
+        var range = NSRange(location: 0, length: self.length)
+        var offset = 0
+        
+        if bytes[offset++] == 0x30 {
+            if bytes[offset] > 0x80 {
+                offset += Int(bytes[offset]) - 0x80 + 1
+            } else {
+                offset++
+            }
+            
+            let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+                0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
+            let slice: [CUnsignedChar] = Array(bytes[offset...(offset + OID.count)])
+            
+            if slice == OID {
+                offset += OID.count
+                
+                if bytes[offset++] != 0x03 {
+                    return self
+                }
+                
+                if bytes[offset] > 0x80 {
+                    offset += Int(bytes[offset]) - 0x80 + 1
+                } else {
+                    offset++
+                }
+                
+                if bytes[offset++] != 0x00 {
+                    return self
+                }
+                
+                range.location += offset
+                range.length -= offset
+            } else {
+                return self
+            }
+        }
+        
+        return self.subdataWithRange(range)
+    }
+}
+
