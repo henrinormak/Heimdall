@@ -369,6 +369,52 @@ public class Heimdall {
         return result
     }
     
+    private class func updateKey(tag: String, keySize: Int? = nil, data: NSData) -> Bool {
+        var query: Dictionary<String, AnyObject> = [
+            String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
+            String(kSecClass): kSecClassKey as CFStringRef,
+            String(kSecAttrApplicationTag): tag as CFStringRef]
+        
+        if let size = keySize {
+            query[String(kSecAttrKeySizeInBits)] = size
+        }
+        
+        return SecItemUpdate(query, [String(kSecValueData): data]) == noErr
+    }
+    
+    private class func deleteKey(tag: String, keySize: Int? = nil) -> Bool {
+        var query: Dictionary<String, AnyObject> = [
+            String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
+            String(kSecClass): kSecClassKey as CFStringRef,
+            String(kSecAttrApplicationTag): tag as CFStringRef]
+        
+        if let size = keySize {
+            query[String(kSecAttrKeySizeInBits)] = size
+        }
+        
+        return SecItemDelete(query) == noErr
+    }
+    
+    private class func insertPublicKey(publicTag: String, data: NSData) -> SecKeyRef? {
+        let publicAttributes = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
+            String(kSecClass): kSecClassKey as CFStringRef,
+            String(kSecAttrApplicationTag): publicTag as CFStringRef,
+            String(kSecValueData): data as CFDataRef,
+            String(kSecAttrKeyClass): kSecAttrKeyClassPublic as CFStringRef,
+            String(kSecReturnPersistentRef): true as CFBooleanRef]
+        
+        var persistentRef = Unmanaged<AnyObject>?()
+        let result: SecKeyRef?
+        let status = SecItemAdd(publicAttributes, &persistentRef)
+        
+        if status != noErr && status != errSecDuplicateItem {
+            return nil
+        }
+        
+        return Heimdall.obtainKey(publicTag)
+    }
+    
+    
     private class func addX509Header(data: NSData) -> NSData {
         let result = NSMutableData()
         
