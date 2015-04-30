@@ -325,15 +325,18 @@ public class Heimdall {
     //  MARK: Private class functions
     //
     
-    private class func obtainKey(tag: String, keySize: Int) -> SecKeyRef? {
+    private class func obtainKey(tag: String, keySize: Int? = nil) -> SecKeyRef? {
         var keyRef: Unmanaged<AnyObject>?
-        let query = [
+        var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-            String(kSecAttrKeySizeInBits): keySize,
             String(kSecReturnRef): kCFBooleanTrue as CFBoolean,
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef,
         ]
+        
+        if let size = keySize {
+            query[String(kSecAttrKeySizeInBits)] = size
+        }
         
         let result: SecKeyRef?
         
@@ -347,15 +350,18 @@ public class Heimdall {
         return result
     }
     
-    private class func obtainKeyData(tag: String, keySize: Int) -> NSData? {
+    private class func obtainKeyData(tag: String, keySize: Int? = nil) -> NSData? {
         var keyRef: Unmanaged<AnyObject>?
-        var query = [
+        var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-            String(kSecAttrKeySizeInBits): keySize,
             String(kSecReturnData): kCFBooleanTrue as CFBoolean,
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef,
         ]
+        
+        if let size = keySize {
+            query[String(kSecAttrKeySizeInBits)] = size
+        }
         
         let result: NSData?
         
