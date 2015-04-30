@@ -17,7 +17,7 @@ class ViewController: UIViewController, UITextViewDelegate {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        self.heimdall = Heimdall(tag: "com.hnormak.heimdall.example", keySize: 1024)
+        self.heimdall = Heimdall(tagPrefix: "com.hnormak.heimdall.example", keySize: 1024)
         
         NSNotificationCenter.defaultCenter().addObserver(self, selector: "keyboardWillChange:", name: UIKeyboardWillChangeFrameNotification, object: nil)
     }
