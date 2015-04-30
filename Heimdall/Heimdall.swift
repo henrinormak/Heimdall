@@ -38,13 +38,10 @@ import Security
 import CommonCrypto
 
 public class Heimdall {
-    let tag: String
-    let privateTag: String
-    let keySize: Int
+    private let publicTag: String
+    private let privateTag: String?
+    private let keySize: Int
     
-    public enum KeyType {
-        case Public
-        case Private
     }
     
     public init?(tag: String, keySize: Int = 2048) {
@@ -64,7 +61,7 @@ public class Heimdall {
     }
     
     //
-    //  Public functions
+    //  MARK: Public functions
     //
     
     ///
@@ -312,6 +309,15 @@ public class Heimdall {
             String(kSecAttrApplicationTag): self.privateTag as CFStringRef]
         
         let privateResult = SecItemDelete(query)
+    
+    //
+    //  MARK: Private types
+    //
+    private enum KeyType {
+        case Public
+        case Private
+    }
+    
         
         // Public key
         query = [
@@ -328,8 +334,9 @@ public class Heimdall {
         return false
     }
     
+    
     //
-    //  Private helpers
+    //  MARK: Private helpers
     //
     private func obtainKey(key: KeyType) -> SecKeyRef? {
         let tag: String = {
@@ -358,7 +365,7 @@ public class Heimdall {
     }
     
     //
-    //  Private class functions
+    //  MARK: Private class functions
     //
     
     private class func obtainKey(tag: String, keySize: Int) -> SecKeyRef? {
