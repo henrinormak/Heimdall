@@ -41,23 +41,69 @@ public class Heimdall {
     private let publicTag: String
     private let privateTag: String?
     private let keySize: Int
+    private let scope: ScopeOptions
     
+    /// 
+    /// Create an instance with data for the public key,
+    /// the keychain is updated with the tag given (call .destroy() to remove)
+    ///
+    /// :params: publicKeyData  Bits of the public key, can include the X509 header (will be stripped)
+    ///
+    /// :returns: Heimdall instance that can handle only public key operations
+    ///
+    public convenience init?(var publicKeyData: NSData, tag: String) {
+        // Strip any X509 headers
+        publicKeyData = Heimdall.stripX509Header(publicKeyData)
+        var keySize = publicKeyData.length * 8
+        
+        if let existingData = Heimdall.obtainKeyData(tag) {
+            if !existingData.isEqualToData(publicKeyData) {
+                // Existing data is not the same, so update it with the new provided data
+                Heimdall.updateKey(tag, keySize: nil, data: publicKeyData)
+            }
+            
+            keySize = existingData.length * 8
+            self.init(scope: ScopeOptions.PublicKey, publicTag: tag, privateTag: nil, keySize: keySize)
+        } else if let key = Heimdall.insertPublicKey(tag, data: publicKeyData) {
+            // Successfully created the new key
+            self.init(scope: ScopeOptions.PublicKey, publicTag: tag, privateTag: nil, keySize: keySize)
+        } else {
+            self.init(scope: ScopeOptions.PublicKey, publicTag: tag, privateTag: nil, keySize: keySize)
+            return nil
+        }
     }
     
-    public init?(tag: String, keySize: Int = 2048) {
-        let privateTag = tag + ".private"
-        
-        self.tag = tag
-        self.privateTag = privateTag
-        self.keySize = keySize
-        
-        // If we already have both keys, then the permanent flag can be ignored
-        // otherwise we need to generate (and potentially store) the keys
-        if Heimdall.obtainKey(tag, keySize: keySize) == nil || Heimdall.obtainKey(privateTag, keySize: keySize) == nil {
-            if Heimdall.generateKeyPair(tag, privateTag: privateTag, keySize: keySize) == nil {
+    ///
+    /// Shorthand for creating an instance with both public and private key, where the tag
+    /// for private key is automatically generated
+    ///
+    /// :returns: Heimdall instance that can handle both private and public key operations
+    ///
+    public convenience init?(tag: String, keySize: Int = 2048) {
+        self.init(publicTag: tag, privateTag: tag + ".private", keySize: keySize)
+    }
+    
+    ///
+    /// Create an instane with public and private key tags, if the key pair does not exist
+    /// the keys will be generated
+    ///
+    /// :returns: Heimdall instance ready for both public and private key operations
+    ///
+    public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048) {
+        self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag, keySize: keySize)
+
+        if Heimdall.obtainKey(publicTag, keySize: keySize) == nil || Heimdall.obtainKey(privateTag, keySize: keySize) == nil {
+            if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize) == nil {
                 return nil
             }
         }
+    }
+    
+    private init(scope: ScopeOptions, publicTag: String, privateTag: String?, keySize: Int) {
+        self.publicTag = publicTag
+        self.privateTag = privateTag
+        self.keySize = keySize
+        self.scope = scope
     }
     
     //
@@ -258,14 +304,16 @@ public class Heimdall {
     /// :returns: True if remove successfully
     ///
     public func destroy() -> Bool {
-        var items = [[String: AnyObject]]()
+        if Heimdall.deleteKey(self.publicTag, keySize: self.keySize) {
+            if let privateTag = self.privateTag {
+                return Heimdall.deleteKey(privateTag, keySize: self.keySize)
+            }
+            
+            return true
+        }
         
-        // Private key
-        var query = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-            String(kSecClass): kSecClassKey as CFStringRef,
-            String(kSecAttrApplicationTag): self.privateTag as CFStringRef]
-        
-        let privateResult = SecItemDelete(query)
+        return false
+    }
     
     //
     //  MARK: Private types
@@ -275,20 +323,21 @@ public class Heimdall {
         case Private
     }
     
+    private struct ScopeOptions: RawOptionSetType {
+        private var value: UInt
         
-        // Public key
-        query = [
-            String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-            String(kSecClass): kSecClassKey as CFStringRef,
-            String(kSecAttrApplicationTag): self.tag as CFStringRef]
+        init(_ rawValue: UInt) { self.value = rawValue }
+        init(rawValue: UInt) { self.value = rawValue }
+        init(nilLiteral: ()) { self.value = 0}
         
-        let publicResult = SecItemDelete(query)
+        var rawValue: UInt { return self.value }
+        var boolValue: Bool { return self.value != 0 }
         
-        if privateResult == noErr && publicResult == noErr {
-            return true
-        }
+        static var allZeros: ScopeOptions { return self(0) }
         
-        return false
+        static var PublicKey: ScopeOptions { return self(1 << 0) }
+        static var PrivateKey: ScopeOptions { return self(1 << 1) }
+        static var All: ScopeOptions           { return self(0b11) }
     }
     
     
@@ -296,29 +345,23 @@ public class Heimdall {
     //  MARK: Private helpers
     //
     private func obtainKey(key: KeyType) -> SecKeyRef? {
-        let tag: String = {
-            switch key {
-            case .Public:
-                return self.tag
-            case .Private:
-                return self.privateTag
-            }
-            }()
+        if key == .Public && self.scope & ScopeOptions.PublicKey == ScopeOptions.PublicKey {
+            return Heimdall.obtainKey(self.publicTag, keySize: self.keySize)
+        } else if let tag = self.privateTag where key == .Private && self.scope & ScopeOptions.PrivateKey == ScopeOptions.PrivateKey {
+            return Heimdall.obtainKey(tag, keySize: self.keySize)
+        }
         
-        return Heimdall.obtainKey(tag, keySize: self.keySize)
+        return nil
     }
     
     private func obtainKeyData(key: KeyType) -> NSData? {
-        let tag: String = {
-            switch key {
-            case .Public:
-                return self.tag
-            case .Private:
-                return self.privateTag
-            }
-        }()
+        if key == .Public && self.scope & ScopeOptions.PublicKey == ScopeOptions.PublicKey {
+            return Heimdall.obtainKeyData(self.publicTag, keySize: self.keySize)
+        } else if let tag = self.privateTag where key == .Private && self.scope & ScopeOptions.PrivateKey == ScopeOptions.PrivateKey {
+            return Heimdall.obtainKeyData(tag, keySize: self.keySize)
+        }
         
-        return Heimdall.obtainKeyData(tag, keySize: self.keySize)
+        return nil
     }
     
     //
