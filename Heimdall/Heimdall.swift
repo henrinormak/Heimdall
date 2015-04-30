@@ -219,25 +219,25 @@ public class Heimdall {
     /// :param: signatureBase64     Base64 of the signature data, signature is made of the SHA256 hash of message
     /// :param: urlEncoded          True, if the signature is URL encoded and has to be reversed before manipulating
     ///
-    /// :returns: true if the signature is valid
+    /// :returns: true if the signature is valid (and can be validated)
     ///
     public func verify(message: String, var signatureBase64: String, urlEncoded: Bool = true) -> Bool {
-        if urlEncoded {
-            signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("_", withString: "/")
-            signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("-", withString: "+")
-        }
-        
-        if let signature = NSData(base64EncodedString: signatureBase64, options: .allZeros),
+        if let key = obtainKey(.Public) {
+            if urlEncoded {
+                signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("_", withString: "/")
+                signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("-", withString: "+")
+            }
+            
+            if let signature = NSData(base64EncodedString: signatureBase64, options: .allZeros),
                 messageData = message.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false),
                 hashData = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
-            
-            CC_SHA256(messageData.bytes, CC_LONG(messageData.length), UnsafeMutablePointer(hashData.mutableBytes))
-            
-            let signedData = UnsafePointer<UInt8>(hashData.bytes)
-            let signatureLength = Int(signature.length)
-            let signatureData = UnsafePointer<UInt8>(signature.bytes)
-            
-            if let key = obtainKey(.Public) {
+                    
+                CC_SHA256(messageData.bytes, CC_LONG(messageData.length), UnsafeMutablePointer(hashData.mutableBytes))
+                
+                let signedData = UnsafePointer<UInt8>(hashData.bytes)
+                let signatureLength = Int(signature.length)
+                let signatureData = UnsafePointer<UInt8>(signature.bytes)
+                
                 let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1), signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
                 
                 switch result {
