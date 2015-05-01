@@ -24,7 +24,81 @@ Finally, make sure Heimdall is listed under the **Embedded Binaries** section in
 
 If you have a bridging header in place, you can also simply include `Heimdall.swift` to your project and add `#import <CommonCrypto/CommonDigest.h>` to your bridging header.
 
-## Contributing
+## Usage
+
+Using Heimdall is simple, for public-private key-pair, you just have to create an instance, which can be used for encryption/decryption, signing/verifying.
+
+With this method you can locally encrypt data to be stored on disk or in a database, without putting everything in the Keychain.
+
+```swift
+if let heimdall = Heimdall(tagPrefix: "com.example") {
+    let testString = "This is a test string"
+
+    // Encryption/Decryption
+    if let encryptedString = heimdall.encrypt(testString) {
+        println(encryptedString) // "cQzaQCQLhAWqkDyPoHnPrpsVh..."
+
+        if let decryptedString = heimdall.decrypt(encryptedString) {
+            println(decryptedString) // "This is a test string"
+        }
+    }
+
+    // Signatures/Verification
+    if let signature = heimdall.sign(testString) {
+        println(signature) // "fMVOFj6SQ7h+cZTEXZxkpgaDsMrki..."
+        var verified = heimdall.verify(testString, signatureBase64: signature)
+        println(verified) // True
+
+        // If someone meddles with the message and the signature becomes invalid
+        verified = heimdall.verify(testString + "injected false message",
+                                    signatureBase64: signature)
+        println(verified) // False
+    }
+}
+```
+
+### Complex use case
+
+A more complex use case involves exchanging encrypted messages between multiple Heimdall instances, which can be situated on multiple different hosts.
+
+The workflow should be mirrored on all hosts, extracting their public keys and sharing those to all other parties. The public keys can be used to construct special Heimdall instances that are only able to encrypt messages and verify signatures.
+
+```swift
+let localHeimdall = Heimdall(tagPrefix: "com.example")
+
+if let heimdall = localHeimdall {
+    let publicKeyData = heimdall.X509PublicKey()
+    var publicKeyString = publicKeyData.base64EncodedStringWithOptions(.allZeros)
+
+    // If you want to make this string URL safe,
+    // you have to remember to do the reverse on the other side later
+    publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("/", withString: "_")
+    publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("+", withString: "-")
+
+    println(publicKeyString) // Something along the lines of "MIGfMA0GCSqGSIb3DQEBAQUAA..."
+
+    // Data transmission of public key to the other party
+}
+
+// On other party, assuming keyData contains the received public key data
+if let partnerHeimdall = Heimdall(publicTag: "com.example.partner", publicKeyData: keyData) {
+    // Transmit some message to the partner
+    let message = "This is a secret message to my partner"
+    let encryptedMessage = partnerHeimdall.encrypt(message)
+
+    // Transmit the encryptedMessage
+}
+
+// Initial host receives encryptedMessage
+if let heimdall = localHeimdall {
+    if let decryptedMessage = heimdall.decrypt(encryptedMessage) {
+        println(decryptedMessage) // "This is a secret message to my partner"
+    }
+}
+
+```
+
+## Contributing and Current Work
 
 Currently, Heimdall offers minimal functionality, pull requests and issues are all welcome, especially for the following topics:
 
@@ -32,6 +106,7 @@ Currently, Heimdall offers minimal functionality, pull requests and issues are a
 * Tests, adding tests would also likely increase security
 * Additional configurability, perhaps allowing non-permanent keys
 * Error handling, currently most of the API simply returns `nil`s whenever an error occurs, this should be changed and proper error reporting should be implemented
+* Reducing the number of optionals in the public API of the Heimdall instances.
 * CocoaPods/Carthage support, perhaps some users prefer using dependencies over CocoaPods/Carthage
 
 ## Contact
