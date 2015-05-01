@@ -1,3 +1,5 @@
+![Heimdall Helmet](/Images/heimdall_icon.png "Heimdall Helmet")
+
 # Heimdall
 
 In Norse mythology, Heimdall is the gatekeeper of Bifröst, the rainbow road connecting Midgard, realm of the humans, to Asgard, the realm of gods.
