@@ -447,12 +447,13 @@ public class Heimdall {
     }
     
     private class func insertPublicKey(publicTag: String, data: NSData) -> SecKeyRef? {
-        let publicAttributes = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
-            String(kSecClass): kSecClassKey as CFStringRef,
-            String(kSecAttrApplicationTag): publicTag as CFStringRef,
-            String(kSecValueData): data as CFDataRef,
-            String(kSecAttrKeyClass): kSecAttrKeyClassPublic as CFStringRef,
-            String(kSecReturnPersistentRef): true as CFBooleanRef]
+        var publicAttributes = Dictionary<String, AnyObject>()
+        publicAttributes[String(kSecAttrKeyType)] = kSecAttrKeyTypeRSA
+        publicAttributes[String(kSecClass)] = kSecClassKey as CFStringRef
+        publicAttributes[String(kSecAttrApplicationTag)] = publicTag as CFStringRef
+        publicAttributes[String(kSecValueData)] = data as CFDataRef
+        publicAttributes[String(kSecAttrKeyClass)] = kSecAttrKeyClassPublic as CFStringRef
+        publicAttributes[String(kSecReturnPersistentRef)] = true as CFBooleanRef
         
         var persistentRef = Unmanaged<AnyObject>?()
         let result: SecKeyRef?
