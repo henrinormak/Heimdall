@@ -10,11 +10,25 @@ Furthermore, Heimdall also helps maintain the public-private RSA key-pair in Key
 
 ## Installation
 
+### CocoaPods
+
+Heimdall is available as a CocoaPod, simply add the following line to your Podfile
+
+```ruby
+pod 'Heimdall', '~> 0.1'
+```
+
+Also, make sure your podfile includes the following line, which is necessary to support Swift frameworks
+
+```ruby
+use_frameworks!
+```
+
 ### Subproject
 
-As Heimdall makes use of CommonCrypto and has it wrapped in a pseudo-module, the easiest way to use Heimdall is to include the entire project (or the produced framework).
+As Heimdall makes use of `CommonCrypto` and has it wrapped in a pseudo-module, the easiest way to use Heimdall is to include the entire project as a subproject in your workspace.
 
-Easiest way to use Heimdall is to include the `Heimdall.xcodeproj` into your Xcode project. Then specify the `Heimdall` target as **Target Dependency**.
+To do this, include `Heimdall.xcodeproj` (found in Heimdall folder) into your Xcode workspace. Then specify the `Heimdall` target as a **Target Dependency** for your main application target.
 
 ![Target Dependency selection in Xcode](/Images/target_dependency.png?raw=true "Target Dependency")
 
@@ -24,7 +38,31 @@ Finally, make sure Heimdall is listed under the **Embedded Binaries** section in
 
 ### Directly
 
-If you have a bridging header in place, you can also simply include `Heimdall.swift` to your project and add `#import <CommonCrypto/CommonDigest.h>` to your bridging header.
+Although not recommended, you can also add Heimdall directly, by including `Heimdall.swift` in your project.
+
+As Heimdall uses `CommonCrypto`, you also need to include a build phase for the following script, which needs to occur before compilation of `Heimdall.swift`
+
+```bash
+modulesDirectory=$DERIVED_FILES_DIR/modules
+modulesMap=$modulesDirectory/module.modulemap
+modulesMapTemp=$modulesDirectory/module.modulemap.tmp
+
+mkdir -p "$modulesDirectory"
+
+cat > "$modulesMapTemp" << MAP
+module CommonCrypto [system] {
+    header "$SDKROOT/usr/include/CommonCrypto/CommonCrypto.h"
+    export *
+}
+MAP
+
+diff "$modulesMapTemp" "$modulesMap" >/dev/null 2>/dev/null
+if [[ $? != 0 ]] ; then
+    mv "$modulesMapTemp" "$modulesMap"
+else
+    rm "$modulesMapTemp"
+fi
+```
 
 ## Usage
 
