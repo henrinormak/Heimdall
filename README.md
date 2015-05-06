@@ -24,6 +24,10 @@ Also, make sure your podfile includes the following line, which is necessary to 
 use_frameworks!
 ```
 
+### Carthage (unconfirmed)
+
+As the `Heimdall.xcodeproj` produces a dynamic framework, Heimdall should function properly with Carthage. This has not been confirmed.
+
 ### Subproject
 
 As Heimdall makes use of `CommonCrypto` and has it wrapped in a pseudo-module, the easiest way to use Heimdall is to include the entire project as a subproject in your workspace.
@@ -147,7 +151,6 @@ Currently, Heimdall offers minimal functionality, pull requests and issues are a
 * Additional configurability, perhaps allowing non-permanent keys
 * Error handling, currently most of the API simply returns `nil`s whenever an error occurs, this should be changed and proper error reporting should be implemented
 * Reducing the number of optionals in the public API of the Heimdall instances.
-* CocoaPods/Carthage support, perhaps some users prefer using dependencies over CocoaPods/Carthage
 
 ## Contact
 
