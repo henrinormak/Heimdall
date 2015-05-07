@@ -1,0 +1,3 @@
+language: objective-c
+xcode_project: Heimdall/Heimdall.xcodeproj
+xcode_scheme: Heimdall
