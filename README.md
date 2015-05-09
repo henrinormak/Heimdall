@@ -68,6 +68,9 @@ else
 fi
 ```
 
+In addition, the add the following path (`$(DERIVED_DATA_DIR)/modules`) to the **Include Paths** (SWIFT_INCLUDE_PATHS) build setting
+
+
 ## Usage
 
 Using Heimdall is simple, for public-private key-pair, you just have to create an instance, which can be used for encryption/decryption, signing/verifying.
