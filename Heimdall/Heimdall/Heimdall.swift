@@ -40,7 +40,6 @@ import CommonCrypto
 public class Heimdall {
     private let publicTag: String
     private let privateTag: String?
-    private let keySize: Int
     private let scope: ScopeOptions
     
     /// 
@@ -56,23 +55,36 @@ public class Heimdall {
     ///
     public convenience init?(publicTag: String, var publicKeyData: NSData? = nil) {
         if let existingData = Heimdall.obtainKeyData(publicTag) {
-            var keySize = existingData.length * 8
-            
             // Compare agains the new data (optional)
             if let newData = publicKeyData?.dataByStrippingX509Header() where !existingData.isEqualToData(newData) {
-                Heimdall.updateKey(publicTag, keySize: nil, data: newData)
-                keySize = newData.length * 8
+                Heimdall.updateKey(publicTag, data: newData)
             }
             
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, keySize: keySize)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
         } else if let data = publicKeyData?.dataByStrippingX509Header(), key = Heimdall.insertPublicKey(publicTag, data: data) {
             // Successfully created the new key
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, keySize: data.length * 8)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
         } else {
             // Call the init, although returning nil
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, keySize: 0)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
             return nil
         }
+    }
+    
+    ///
+    /// Create an instance with the modulus and exponent of the public key
+    /// the resulting key is added to the keychain (call .destroy() to remove)
+    ///
+    /// :params: publicTag          Tag of the public key, see data based initialiser for details
+    /// :params: publicKeyModulus   Modulus of the public key
+    /// :params: publicKeyExponent  Exponent of the public key
+    ///
+    /// :returns: Heimdall instance that can handle only public key operations
+    ///
+    public convenience init?(publicTag: String, publicKeyModulus: NSData, publicKeyExponent: NSData) {
+        // Combine the data into one that we can use for initialisation
+        let combinedData = NSData(modulus: publicKeyModulus, exponent: publicKeyExponent)
+        self.init(publicTag: publicTag, publicKeyData: combinedData)
     }
     
     ///
@@ -82,7 +94,7 @@ public class Heimdall {
     /// :returns: Heimdall instance that can handle both private and public key operations
     ///
     public convenience init?(tagPrefix: String, keySize: Int = 2048) {
-        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize)
+        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private")
     }
     
     ///
@@ -92,19 +104,18 @@ public class Heimdall {
     /// :returns: Heimdall instance ready for both public and private key operations
     ///
     public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048) {
-        self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag, keySize: keySize)
+        self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag)
 
-        if Heimdall.obtainKey(publicTag, keySize: keySize) == nil || Heimdall.obtainKey(privateTag, keySize: keySize) == nil {
+        if Heimdall.obtainKey(publicTag) == nil || Heimdall.obtainKey(privateTag) == nil {
             if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize) == nil {
                 return nil
             }
         }
     }
     
-    private init(scope: ScopeOptions, publicTag: String, privateTag: String?, keySize: Int) {
+    private init(scope: ScopeOptions, publicTag: String, privateTag: String?) {
         self.publicTag = publicTag
         self.privateTag = privateTag
-        self.keySize = keySize
         self.scope = scope
     }
     
@@ -116,8 +127,16 @@ public class Heimdall {
     /// :returns: Public key in X.509 format
     ///
     public func X509PublicKey() -> NSData? {
-        if let key = obtainKeyData(.Public) {
-            return key.dataByPrependingX509Header()
+        if let keyData = obtainKeyData(.Public) {
+            return keyData.dataByPrependingX509Header()
+        }
+        
+        return nil
+    }
+    
+    public func PublicKeyComponents() -> (modulus: NSData, exponent: NSData)? {
+        if let keyData = obtainKeyData(.Public), (modulus, exponent) = keyData.splitIntoComponents() {
+            return (modulus, exponent)
         }
         
         return nil
@@ -306,9 +325,9 @@ public class Heimdall {
     /// :returns: True if remove successfully
     ///
     public func destroy() -> Bool {
-        if Heimdall.deleteKey(self.publicTag, keySize: self.keySize) {
+        if Heimdall.deleteKey(self.publicTag) {
             if let privateTag = self.privateTag {
-                return Heimdall.deleteKey(privateTag, keySize: self.keySize)
+                return Heimdall.deleteKey(privateTag)
             }
             
             return true
@@ -348,9 +367,9 @@ public class Heimdall {
     //
     private func obtainKey(key: KeyType) -> SecKeyRef? {
         if key == .Public && self.scope & ScopeOptions.PublicKey == ScopeOptions.PublicKey {
-            return Heimdall.obtainKey(self.publicTag, keySize: self.keySize)
+            return Heimdall.obtainKey(self.publicTag)
         } else if let tag = self.privateTag where key == .Private && self.scope & ScopeOptions.PrivateKey == ScopeOptions.PrivateKey {
-            return Heimdall.obtainKey(tag, keySize: self.keySize)
+            return Heimdall.obtainKey(tag)
         }
         
         return nil
@@ -358,9 +377,9 @@ public class Heimdall {
     
     private func obtainKeyData(key: KeyType) -> NSData? {
         if key == .Public && self.scope & ScopeOptions.PublicKey == ScopeOptions.PublicKey {
-            return Heimdall.obtainKeyData(self.publicTag, keySize: self.keySize)
+            return Heimdall.obtainKeyData(self.publicTag)
         } else if let tag = self.privateTag where key == .Private && self.scope & ScopeOptions.PrivateKey == ScopeOptions.PrivateKey {
-            return Heimdall.obtainKeyData(tag, keySize: self.keySize)
+            return Heimdall.obtainKeyData(tag)
         }
         
         return nil
@@ -370,7 +389,7 @@ public class Heimdall {
     //  MARK: Private class functions
     //
     
-    private class func obtainKey(tag: String, keySize: Int? = nil) -> SecKeyRef? {
+    private class func obtainKey(tag: String) -> SecKeyRef? {
         var keyRef: Unmanaged<AnyObject>?
         var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
@@ -379,23 +398,22 @@ public class Heimdall {
             String(kSecAttrApplicationTag): tag as CFStringRef,
         ]
         
-        if let size = keySize {
-            query[String(kSecAttrKeySizeInBits)] = size
-        }
-        
         let result: SecKeyRef?
+        let status = SecItemCopyMatching(query, &keyRef)
         
-        switch SecItemCopyMatching(query, &keyRef) {
+        switch status {
         case noErr:
-            result = Optional(keyRef?.takeRetainedValue() as! SecKeyRef)
+            if let ref: AnyObject = keyRef?.takeRetainedValue() {
+                return (ref as! SecKeyRef)
+            }
         default:
             result = nil
         }
         
-        return result
+        return nil
     }
     
-    private class func obtainKeyData(tag: String, keySize: Int? = nil) -> NSData? {
+    private class func obtainKeyData(tag: String) -> NSData? {
         var keyRef: Unmanaged<AnyObject>?
         var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
@@ -403,10 +421,6 @@ public class Heimdall {
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef,
         ]
-        
-        if let size = keySize {
-            query[String(kSecAttrKeySizeInBits)] = size
-        }
         
         let result: NSData?
         
@@ -420,28 +434,20 @@ public class Heimdall {
         return result
     }
     
-    private class func updateKey(tag: String, keySize: Int? = nil, data: NSData) -> Bool {
+    private class func updateKey(tag: String, data: NSData) -> Bool {
         var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef]
-        
-        if let size = keySize {
-            query[String(kSecAttrKeySizeInBits)] = size
-        }
         
         return SecItemUpdate(query, [String(kSecValueData): data]) == noErr
     }
     
-    private class func deleteKey(tag: String, keySize: Int? = nil) -> Bool {
+    private class func deleteKey(tag: String) -> Bool {
         var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef]
-        
-        if let size = keySize {
-            query[String(kSecAttrKeySizeInBits)] = size
-        }
         
         return SecItemDelete(query) == noErr
     }
@@ -452,7 +458,6 @@ public class Heimdall {
         publicAttributes[String(kSecClass)] = kSecClassKey as CFStringRef
         publicAttributes[String(kSecAttrApplicationTag)] = publicTag as CFStringRef
         publicAttributes[String(kSecValueData)] = data as CFDataRef
-        publicAttributes[String(kSecAttrKeyClass)] = kSecAttrKeyClassPublic as CFStringRef
         publicAttributes[String(kSecReturnPersistentRef)] = true as CFBooleanRef
         
         var persistentRef = Unmanaged<AnyObject>?()
@@ -551,39 +556,138 @@ public class Heimdall {
     }
 }
 
+///
+/// Encoding/Decoding lengths as octets
+///
+private extension NSInteger {
+    func encodedOctets() -> [CUnsignedChar] {
+        // Short form
+        if self < 128 {
+            return [CUnsignedChar(self)];
+        }
+        
+        // Long form
+        var i = (self / 256) + 1
+        var len = self
+        var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
+        
+        for (var j = 0; j < i; j++) {
+            result.insert(CUnsignedChar(len & 0xFF), atIndex: 1)
+            len = len >> 8
+        }
+        
+        return result
+    }
+    
+    init?(octetBytes: [CUnsignedChar], inout startIdx: NSInteger) {
+        if octetBytes[startIdx] < 128 {
+            // Short form
+            self.init(octetBytes[startIdx])
+            startIdx += 1
+        } else {
+            // Long form
+            let octets = NSInteger(octetBytes[startIdx] - 128)
+            var result = UInt64(octetBytes[startIdx + 1])
+            
+            if octets > octetBytes.count - startIdx {
+                self.init(0)
+                return nil
+            }
+            
+            for j in 1..<octets {
+                result = (result << 8)
+                result = result + UInt64(octetBytes[startIdx + 1 + j])
+            }
+            
+            startIdx += 1 + octets
+            self.init(result)
+        }
+    }
+}
+
 
 ///
-/// Manipulating data to include/exclude X509 headers
+/// Manipulating data
 ///
 private extension NSData {
+    convenience init(modulus: NSData, exponent: NSData) {
+        // Make sure neither the modulus nor the exponent start with a null byte
+        var modulusBytes = [CUnsignedChar](UnsafeBufferPointer<CUnsignedChar>(start: UnsafePointer<CUnsignedChar>(modulus.bytes), count: modulus.length / sizeof(CUnsignedChar)))
+        var exponentBytes = [CUnsignedChar](UnsafeBufferPointer<CUnsignedChar>(start: UnsafePointer<CUnsignedChar>(exponent.bytes), count: exponent.length / sizeof(CUnsignedChar)))
+        
+        // Lengths
+        let modulusLengthOctets = modulusBytes.count.encodedOctets()
+        let exponentLengthOctets = exponentBytes.count.encodedOctets()
+        
+        // Total length is the sum of components + types
+        let totalLengthOctets = (modulusLengthOctets.count + modulusBytes.count + exponentLengthOctets.count + exponentBytes.count + 2).encodedOctets()
+        
+        // Combine the two sets of data into a single container
+        var builder: [CUnsignedChar] = []
+        let data = NSMutableData()
+        
+        // Container type and size
+        builder.append(0x30)
+        builder.extend(totalLengthOctets)
+        data.appendBytes(builder, length: builder.count)
+        builder.removeAll(keepCapacity: false)
+        
+        // Modulus
+        builder.append(0x02)
+        builder.extend(modulusLengthOctets)
+        data.appendBytes(builder, length: builder.count)
+        builder.removeAll(keepCapacity: false)
+        data.appendBytes(modulusBytes, length: modulusBytes.count)
+        
+        // Exponent
+        builder.append(0x02)
+        builder.extend(exponentLengthOctets)
+        data.appendBytes(builder, length: builder.count)
+        data.appendBytes(exponentBytes, length: exponentBytes.count)
+        
+        self.init(data: data)
+    }
+    
+    func splitIntoComponents() -> (modulus: NSData, exponent: NSData)? {
+        // Get the bytes from the keyData
+        let pointer = UnsafePointer<CUnsignedChar>(self.bytes)
+        let keyBytes = [CUnsignedChar](UnsafeBufferPointer<CUnsignedChar>(start:pointer, count:self.length / sizeof(CUnsignedChar)))
+
+        // Assumption is that the data is in DER encoding
+        // If we can parse it, then return successfully
+        var i: NSInteger = 0
+        
+        // First there should be an ASN.1 SEQUENCE
+        if keyBytes[0] != 0x30 {
+            return nil
+        } else {
+            i += 1
+        }
+
+        // Total length of the container
+        if let totalLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
+            // First component is the modulus
+            if keyBytes[i++] == 0x02, let modulusLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
+                let modulus = self.subdataWithRange(NSMakeRange(i, modulusLength))
+                i += modulusLength
+                
+                // Second should be the exponent
+                if keyBytes[i++] == 0x02, let exponentLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
+                    let exponent = self.subdataWithRange(NSMakeRange(i, exponentLength))
+                    i += exponentLength
+                    
+                    return (modulus, exponent)
+                }
+            }
+        }
+        
+        return nil
+    }
+    
     func dataByPrependingX509Header() -> NSData {
         let result = NSMutableData()
         
-        let encodingLength: Int = {
-            if self.length + 1 < 128 {
-                return 1
-            } else {
-                return ((self.length + 1) / 256) + 2
-            }
-            }()
-        
-        func encodeLength(length: Int) -> [CUnsignedChar] {
-            if length < 128 {
-                return [CUnsignedChar(length)];
-            }
-            
-            var i = (length / 256) + 1
-            var len = length
-            var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
-            
-            for (var j = 0; j < i; j++) {
-                result.insert(CUnsignedChar(len & 0xFF), atIndex: 1)
-                len = len >> 8
-            }
-            
-            return result
-        }
-        
+        let encodingLength: Int = (self.length + 1).encodedOctets().count
         let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
             0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
         
@@ -594,14 +698,14 @@ private extension NSData {
         
         // Overall size, made of OID + bitstring encoding + actual key
         let size = OID.count + 2 + encodingLength + self.length
-        let encodedSize = encodeLength(size)
+        let encodedSize = size.encodedOctets()
         builder.extend(encodedSize)
         result.appendBytes(builder, length: builder.count)
         result.appendBytes(OID, length: OID.count)
         builder.removeAll(keepCapacity: false)
         
         builder.append(0x03)
-        builder.extend(encodeLength(self.length + 1))
+        builder.extend((self.length + 1).encodedOctets())
         builder.append(0x00)
         result.appendBytes(builder, length: builder.count)
         
