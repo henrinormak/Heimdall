@@ -1,0 +1,10 @@
+//
+//  CommonCrypto.xcconfig
+//  Heimdall
+//
+//  Created by Henri Normak on 09/05/15.
+//  Copyright (c) 2015 Henri Normak. All rights reserved.
+//
+
+MODULEMAP_FILE[sdk=iphoneos*] = $(SRCROOT)/CommonCrypto/iphoneos.modulemap
+MODULEMAP_FILE[sdk=iphonesimulator*] = $(SRCROOT)/CommonCrypto/iphonesimulator.modulemap
