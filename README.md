@@ -8,6 +8,10 @@ In iOS, Heimdall serves as a gatekeeper between Security framework and the UI, o
 
 Furthermore, Heimdall also helps maintain the public-private RSA key-pair in Keychain, allowing both creating as well as deleting the key pairs.
 
+## Requirements
+
+Heimdall requires Swift 1.2, and is only compatible with iOS 8 and above.
+
 ## Installation
 
 ### CocoaPods
