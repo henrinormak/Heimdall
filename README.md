@@ -1,5 +1,8 @@
 ![Heimdall Helmet](/Images/heimdall_icon.png "Heimdall Helmet")
 
+![CocoaPods compatible](https://img.shields.io/cocoapods/v/Heimdall.svg)
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+
 # Heimdall
 
 In Norse mythology, Heimdall is the gatekeeper of Bifröst, the rainbow road connecting Midgard, realm of the humans, to Asgard, the realm of gods.
@@ -28,9 +31,15 @@ Also, make sure your podfile includes the following line, which is necessary to 
 use_frameworks!
 ```
 
-### Carthage (unconfirmed)
+### Carthage
 
-As the `Heimdall.xcodeproj` produces a dynamic framework, Heimdall should function properly with Carthage. This has not been confirmed.
+Simply include the following line in your Cartfile
+
+```
+github 'henrinormak/Heimdall' ~> 0.1
+```
+
+Note that Heimdall produces two frameworks in the Carthage build directory - `Heimdall.framework` and `CommonCrypto.framework`, you only need to include/embed `Heimdall.framework` into your project.
 
 ### Subproject
 

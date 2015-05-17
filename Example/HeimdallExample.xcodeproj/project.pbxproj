@@ -13,7 +13,6 @@
 		8E05A4C61AE91F8C0047E970 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C51AE91F8C0047E970 /* Images.xcassets */; };
 		8E05A4C91AE91F8C0047E970 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C71AE91F8C0047E970 /* LaunchScreen.xib */; };
 		8E05A4D51AE91F8C0047E970 /* HeimdallExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E05A4D41AE91F8C0047E970 /* HeimdallExampleTests.swift */; };
-		8E7DE7EB1AF93F4D00FDE3A7 /* Heimdall.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8E7DE7E41AF93F2A00FDE3A7 /* Heimdall.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -24,33 +23,26 @@
 			remoteGlobalIDString = 8E05A4B81AE91F8C0047E970;
 			remoteInfo = HeimdallExample;
 		};
-		8E7DE7E31AF93F2A00FDE3A7 /* PBXContainerItemProxy */ = {
+		8ECE87871B08B04B001CF907 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 8E7DE7DD1AF93F2A00FDE3A7 /* Heimdall.xcodeproj */;
+			containerPortal = 8ECE87811B08B04B001CF907 /* Heimdall.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 8E866C541AE8FBEC005682A2;
 			remoteInfo = Heimdall;
 		};
-		8E7DE7E51AF93F2A00FDE3A7 /* PBXContainerItemProxy */ = {
+		8ECE87891B08B04B001CF907 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 8E7DE7DD1AF93F2A00FDE3A7 /* Heimdall.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 8E866CC51AE8FE7D005682A2;
-			remoteInfo = CommonCrypto;
-		};
-		8E7DE7E71AF93F2A00FDE3A7 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8E7DE7DD1AF93F2A00FDE3A7 /* Heimdall.xcodeproj */;
+			containerPortal = 8ECE87811B08B04B001CF907 /* Heimdall.xcodeproj */;
 			proxyType = 2;
 			remoteGlobalIDString = 8E866C5F1AE8FBEC005682A2;
 			remoteInfo = HeimdallTests;
 		};
-		8E7DE7E91AF93F3B00FDE3A7 /* PBXContainerItemProxy */ = {
+		8ECE878B1B08B04B001CF907 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
-			containerPortal = 8E7DE7DD1AF93F2A00FDE3A7 /* Heimdall.xcodeproj */;
-			proxyType = 1;
-			remoteGlobalIDString = 8E866C531AE8FBEC005682A2;
-			remoteInfo = Heimdall;
+			containerPortal = 8ECE87811B08B04B001CF907 /* Heimdall.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 8E38307A1AFE176A007E4235;
+			remoteInfo = CommonCrypto;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -61,7 +53,6 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
-				8E7DE7EB1AF93F4D00FDE3A7 /* Heimdall.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -79,7 +70,7 @@
 		8E05A4CE1AE91F8C0047E970 /* HeimdallExampleTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = HeimdallExampleTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E05A4D31AE91F8C0047E970 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E05A4D41AE91F8C0047E970 /* HeimdallExampleTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeimdallExampleTests.swift; sourceTree = "<group>"; };
-		8E7DE7DD1AF93F2A00FDE3A7 /* Heimdall.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Heimdall.xcodeproj; path = ../Heimdall/Heimdall.xcodeproj; sourceTree = "<group>"; };
+		8ECE87811B08B04B001CF907 /* Heimdall.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = Heimdall.xcodeproj; path = ../Heimdall.xcodeproj; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -106,7 +97,7 @@
 				8E05A4BB1AE91F8C0047E970 /* HeimdallExample */,
 				8E05A4D11AE91F8C0047E970 /* HeimdallExampleTests */,
 				8E05A4BA1AE91F8C0047E970 /* Products */,
-				8E7DE7DD1AF93F2A00FDE3A7 /* Heimdall.xcodeproj */,
+				8ECE87811B08B04B001CF907 /* Heimdall.xcodeproj */,
 			);
 			sourceTree = "<group>";
 		};
@@ -157,12 +148,12 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
-		8E7DE7DE1AF93F2A00FDE3A7 /* Products */ = {
+		8ECE87821B08B04B001CF907 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				8E7DE7E41AF93F2A00FDE3A7 /* Heimdall.framework */,
-				8E7DE7E61AF93F2A00FDE3A7 /* CommonCrypto.framework */,
-				8E7DE7E81AF93F2A00FDE3A7 /* HeimdallTests.xctest */,
+				8ECE87881B08B04B001CF907 /* Heimdall.framework */,
+				8ECE878A1B08B04B001CF907 /* HeimdallTests.xctest */,
+				8ECE878C1B08B04B001CF907 /* CommonCrypto.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -182,7 +173,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				8E7DE7EA1AF93F3B00FDE3A7 /* PBXTargetDependency */,
 			);
 			name = HeimdallExample;
 			productName = HeimdallExample;
@@ -238,8 +228,8 @@
 			projectDirPath = "";
 			projectReferences = (
 				{
-					ProductGroup = 8E7DE7DE1AF93F2A00FDE3A7 /* Products */;
-					ProjectRef = 8E7DE7DD1AF93F2A00FDE3A7 /* Heimdall.xcodeproj */;
+					ProductGroup = 8ECE87821B08B04B001CF907 /* Products */;
+					ProjectRef = 8ECE87811B08B04B001CF907 /* Heimdall.xcodeproj */;
 				},
 			);
 			projectRoot = "";
@@ -251,25 +241,25 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		8E7DE7E41AF93F2A00FDE3A7 /* Heimdall.framework */ = {
+		8ECE87881B08B04B001CF907 /* Heimdall.framework */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.framework;
 			path = Heimdall.framework;
-			remoteRef = 8E7DE7E31AF93F2A00FDE3A7 /* PBXContainerItemProxy */;
+			remoteRef = 8ECE87871B08B04B001CF907 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
-		8E7DE7E61AF93F2A00FDE3A7 /* CommonCrypto.framework */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.framework;
-			path = CommonCrypto.framework;
-			remoteRef = 8E7DE7E51AF93F2A00FDE3A7 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		8E7DE7E81AF93F2A00FDE3A7 /* HeimdallTests.xctest */ = {
+		8ECE878A1B08B04B001CF907 /* HeimdallTests.xctest */ = {
 			isa = PBXReferenceProxy;
 			fileType = wrapper.cfbundle;
 			path = HeimdallTests.xctest;
-			remoteRef = 8E7DE7E71AF93F2A00FDE3A7 /* PBXContainerItemProxy */;
+			remoteRef = 8ECE87891B08B04B001CF907 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		8ECE878C1B08B04B001CF907 /* CommonCrypto.framework */ = {
+			isa = PBXReferenceProxy;
+			fileType = wrapper.framework;
+			path = CommonCrypto.framework;
+			remoteRef = 8ECE878B1B08B04B001CF907 /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 /* End PBXReferenceProxy section */
@@ -319,11 +309,6 @@
 			isa = PBXTargetDependency;
 			target = 8E05A4B81AE91F8C0047E970 /* HeimdallExample */;
 			targetProxy = 8E05A4CF1AE91F8C0047E970 /* PBXContainerItemProxy */;
-		};
-		8E7DE7EA1AF93F3B00FDE3A7 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			name = Heimdall;
-			targetProxy = 8E7DE7E91AF93F3B00FDE3A7 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

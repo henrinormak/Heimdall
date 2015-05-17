@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name        = "Heimdall"
-  s.version     = "0.1.2"
+  s.version     = "0.1.3"
   s.summary     = "Heimdall is a wrapper around the Security framework for simple encryption/decryption operations."
   s.license     = { :type => "MIT", :file => "LICENSE" }
 
@@ -22,18 +22,18 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/henrinormak/Heimdall.git", :tag => s.version.to_s }
 
-  s.preserve_paths  = "Heimdall/CommonCrypto/*"
-  s.source_files    = "Heimdall/Heimdall/*"
+  s.preserve_paths  = "CommonCrypto/*"
+  s.source_files    = "Heimdall/*"
   s.requires_arc    = true
 
-  s.xcconfig        = { 'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]' => '$(PODS_ROOT)/Heimdall/Heimdall/CommonCrypto/iphonesimulator/',
-                        'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]' => '$(PODS_ROOT)/Heimdall/Heimdall/CommonCrypto/iphoneos/' }
+  s.xcconfig        = { 'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]' => '$(PODS_ROOT)/Heimdall/CommonCrypto/iphonesimulator/',
+                        'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]' => '$(PODS_ROOT)/Heimdall/CommonCrypto/iphoneos/' }
 
   s.prepare_command = <<-CMD
-                        mkdir -p Heimdall/CommonCrypto/iphoneos
-                        mkdir -p Heimdall/CommonCrypto/iphonesimulator
-                        cp Heimdall/CommonCrypto/iphoneos.modulemap Heimdall/CommonCrypto/iphoneos/module.modulemap
-                        cp Heimdall/CommonCrypto/iphonesimulator.modulemap Heimdall/CommonCrypto/iphonesimulator/module.modulemap
+                        mkdir -p CommonCrypto/iphoneos
+                        mkdir -p CommonCrypto/iphonesimulator
+                        cp CommonCrypto/iphoneos.modulemap CommonCrypto/iphoneos/module.modulemap
+                        cp CommonCrypto/iphonesimulator.modulemap CommonCrypto/iphonesimulator/module.modulemap
                         CMD
 
 end
