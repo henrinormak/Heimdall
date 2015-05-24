@@ -36,7 +36,7 @@ use_frameworks!
 Simply include the following line in your Cartfile
 
 ```
-github 'henrinormak/Heimdall' ~> 0.1
+github "henrinormak/Heimdall" ~> 0.1
 ```
 
 Note that Heimdall produces two frameworks in the Carthage build directory - `Heimdall.framework` and `CommonCrypto.framework`, you only need to include/embed `Heimdall.framework` into your project.
