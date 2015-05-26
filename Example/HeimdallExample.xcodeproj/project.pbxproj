@@ -13,6 +13,7 @@
 		8E05A4C61AE91F8C0047E970 /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C51AE91F8C0047E970 /* Images.xcassets */; };
 		8E05A4C91AE91F8C0047E970 /* LaunchScreen.xib in Resources */ = {isa = PBXBuildFile; fileRef = 8E05A4C71AE91F8C0047E970 /* LaunchScreen.xib */; };
 		8E05A4D51AE91F8C0047E970 /* HeimdallExampleTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E05A4D41AE91F8C0047E970 /* HeimdallExampleTests.swift */; };
+		8EF9942D1B131F0400D334D2 /* Heimdall.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 8ECE87881B08B04B001CF907 /* Heimdall.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -44,6 +45,13 @@
 			remoteGlobalIDString = 8E38307A1AFE176A007E4235;
 			remoteInfo = CommonCrypto;
 		};
+		8EF9942B1B131EEA00D334D2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8ECE87811B08B04B001CF907 /* Heimdall.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E866C531AE8FBEC005682A2;
+			remoteInfo = Heimdall;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -53,6 +61,7 @@
 			dstPath = "";
 			dstSubfolderSpec = 10;
 			files = (
+				8EF9942D1B131F0400D334D2 /* Heimdall.framework in Embed Frameworks */,
 			);
 			name = "Embed Frameworks";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -173,6 +182,7 @@
 			buildRules = (
 			);
 			dependencies = (
+				8EF9942C1B131EEA00D334D2 /* PBXTargetDependency */,
 			);
 			name = HeimdallExample;
 			productName = HeimdallExample;
@@ -309,6 +319,11 @@
 			isa = PBXTargetDependency;
 			target = 8E05A4B81AE91F8C0047E970 /* HeimdallExample */;
 			targetProxy = 8E05A4CF1AE91F8C0047E970 /* PBXContainerItemProxy */;
+		};
+		8EF9942C1B131EEA00D334D2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = Heimdall;
+			targetProxy = 8EF9942B1B131EEA00D334D2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 

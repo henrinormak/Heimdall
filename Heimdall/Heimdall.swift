@@ -134,7 +134,7 @@ public class Heimdall {
         return nil
     }
     
-    public func PublicKeyComponents() -> (modulus: NSData, exponent: NSData)? {
+    public func publicKeyComponents() -> (modulus: NSData, exponent: NSData)? {
         if let keyData = obtainKeyData(.Public), (modulus, exponent) = keyData.splitIntoComponents() {
             return (modulus, exponent)
         }
@@ -587,16 +587,17 @@ private extension NSInteger {
         } else {
             // Long form
             let octets = NSInteger(octetBytes[startIdx] - 128)
-            var result = UInt64(octetBytes[startIdx + 1])
             
             if octets > octetBytes.count - startIdx {
                 self.init(0)
                 return nil
             }
             
-            for j in 1..<octets {
+            var result = UInt64(0)
+            
+            for j in 1...octets {
                 result = (result << 8)
-                result = result + UInt64(octetBytes[startIdx + 1 + j])
+                result = result + UInt64(octetBytes[startIdx + j])
             }
             
             startIdx += 1 + octets
@@ -722,30 +723,27 @@ private extension NSData {
         var range = NSRange(location: 0, length: self.length)
         var offset = 0
         
+        // ASN.1 Sequence
         if bytes[offset++] == 0x30 {
-            if bytes[offset] > 0x80 {
-                offset += Int(bytes[offset]) - 0x80 + 1
-            } else {
-                offset++
-            }
+            // Skip over length
+            let _ = NSInteger(octetBytes: bytes, startIdx: &offset)
             
             let OID: [CUnsignedChar] = [0x30, 0x0d, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
                 0xf7, 0x0d, 0x01, 0x01, 0x01, 0x05, 0x00]
-            let slice: [CUnsignedChar] = Array(bytes[offset...(offset + OID.count)])
+            let slice: [CUnsignedChar] = Array(bytes[offset..<(offset + OID.count)])
             
             if slice == OID {
                 offset += OID.count
                 
+                // Type
                 if bytes[offset++] != 0x03 {
                     return self
                 }
                 
-                if bytes[offset] > 0x80 {
-                    offset += Int(bytes[offset]) - 0x80 + 1
-                } else {
-                    offset++
-                }
+                // Skip over the contents length field
+                let _ = NSInteger(octetBytes: bytes, startIdx: &offset)
                 
+                // Contents should be separated by a null from the header
                 if bytes[offset++] != 0x00 {
                     return self
                 }
