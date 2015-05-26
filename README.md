@@ -160,7 +160,7 @@ if let heimdall = localHeimdall {
 
 ## Contributing and Current Work
 
-Currently, Heimdall offers minimal functionality, pull requests and issues are all welcome, especially for the following topics:
+Contributions to the codebase are very welcome, for ideas on what is needed, have a look through the open issues. In addition, any suggestions regarding the following topics are welcome:
 
 * Security, interacting with the Keychain, making sure the results are kept securely etc.
 * Tests, adding tests would also likely increase security
