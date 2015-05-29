@@ -241,7 +241,7 @@ public class Heimdall {
     /// :param: message     Message to generate the signature for
     /// :param: urlEncode   True if the resulting Base64 data should be URL encoded
     ///
-    /// :returns: Signature as a Bas64 string
+    /// :returns: Signature as a Base64 string
     ///
     public func sign(message: String, urlEncode: Bool = false) -> String? {
         if let key = obtainKey(.Private), messageData = message.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), hash = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
@@ -259,7 +259,7 @@ public class Heimdall {
                 let encryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
                 var encryptedDataLength = blockSize
                 
-                let status = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1), hashData, hashDataLength, encryptedData, &encryptedDataLength)
+                let status = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1SHA256), hashData, hashDataLength, encryptedData, &encryptedDataLength)
                 
                 if status == noErr {
                     // Create Base64 string of the result
@@ -305,7 +305,7 @@ public class Heimdall {
                 let signatureLength = Int(signature.length)
                 let signatureData = UnsafePointer<UInt8>(signature.bytes)
                 
-                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1), signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
+                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1SHA256), signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
                 
                 switch result {
                 case noErr:
