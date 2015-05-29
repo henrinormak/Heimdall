@@ -147,17 +147,39 @@ public class Heimdall {
     /// is generated for a particular process and then encrypted with the
     /// public key from the RSA pair and prepended to the resulting data
     ///
-    /// Result is a combination, where the first
-    /// Encrypt an arbitrary string using the public key of the pair
-    ///
     /// :param: string      Input string to be encrypted
     /// :param: urlEncode   If true, resulting Base64 string is URL encoded
     ///
-    /// :returns: The encrypted data, as Base64 string. First
+    /// :returns: The encrypted data, as Base64 string
     ///
     public func encrypt(string: String, urlEncode: Bool = false) -> String? {
-        // Generate a key and encrypt the message with said key
-        if let publicKey = obtainKey(.Public), aesKey = Heimdall.generateSymmetricKey(Int(kCCKeySizeAES256)), encrypted = Heimdall.encrypt(string, key: aesKey) {
+        if let data = string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), encrypted = self.encrypt(data) {
+            
+            // Convert to a string
+            var resultString = encrypted.base64EncodedStringWithOptions(.allZeros)
+            
+            if urlEncode {
+                resultString = resultString.stringByReplacingOccurrencesOfString("/", withString: "_")
+                resultString = resultString.stringByReplacingOccurrencesOfString("+", withString: "-")
+            }
+            
+            return resultString
+        }
+        
+        return nil
+    }
+    
+    ///
+    /// Encrypt an arbitrary message using AES256, the key for which
+    /// is generated for a particular process and then encrypted with the
+    /// public key from the RSA pair and prepended to the resulting data
+    ///
+    /// :param: data      Input data to be encrypted
+    ///
+    /// :returns: The encrypted data
+    ///
+    public func encrypt(data: NSData) -> NSData? {
+        if let publicKey = obtainKey(.Public), aesKey = Heimdall.generateSymmetricKey(Int(kCCKeySizeAES256)), encrypted = Heimdall.encrypt(data, key: aesKey) {
             // Final resulting data
             let result = NSMutableData()
             
@@ -176,15 +198,7 @@ public class Heimdall {
             
             result.appendData(encrypted)
             
-            // Convert to a string
-            var resultString = result.base64EncodedStringWithOptions(.allZeros)
-            
-            if urlEncode {
-                resultString = resultString.stringByReplacingOccurrencesOfString("/", withString: "_")
-                resultString = resultString.stringByReplacingOccurrencesOfString("+", withString: "-")
-            }
-            
-            return resultString
+            return result
         }
         
         return nil
@@ -194,39 +208,51 @@ public class Heimdall {
     /// Decrypt a Base64 string representation of encrypted data
     ///
     /// :param: base64String    string containing Base64 data to decrypt
-    /// :param: urlEncoded      whether the input Base64 data is URL encoded (if true, some additional changes need to be made first)
+    /// :param: urlEncoded      whether the input Base64 data is URL encoded
     ///
     /// :returns: Decrypted string as plain text
     ///
     public func decrypt(var base64String: String, urlEncoded: Bool = true) -> String? {
+        if urlEncoded {
+            base64String = base64String.stringByReplacingOccurrencesOfString("_", withString: "/")
+            base64String = base64String.stringByReplacingOccurrencesOfString("-", withString: "+")
+        }
+        
+        if let data = NSData(base64EncodedString: base64String, options: .allZeros), decryptedData = self.decrypt(data) {
+            return NSString(data: decryptedData, encoding: NSUTF8StringEncoding) as? String
+        }
+        
+        return nil
+    }
+    
+    ///
+    /// Decrypt the encrypted data
+    ///
+    /// :param: encryptedData   Data to decrypt
+    ///
+    /// :returns: The decrypted data, or nil if failed
+    ///
+    public func decrypt(encryptedData: NSData) -> NSData? {
         if let key = obtainKey(.Private) {
-            if urlEncoded {
-                base64String = base64String.stringByReplacingOccurrencesOfString("_", withString: "/")
-                base64String = base64String.stringByReplacingOccurrencesOfString("-", withString: "+")
-            }
+            // First block size should be the encrypted AES key
+            let blockSize = SecKeyGetBlockSize(key)
+            let keyData = encryptedData.subdataWithRange(NSRange(location: 0, length: blockSize))
+            let messageData = encryptedData.subdataWithRange(NSRange(location: blockSize, length: encryptedData.length - blockSize))
             
-            // Convert to data and grab our private key
-            if let data = NSData(base64EncodedString: base64String, options: .allZeros) {
-                // First block size should be the encrypted AES key
-                let blockSize = SecKeyGetBlockSize(key)
-                let keyData = data.subdataWithRange(NSRange(location: 0, length: blockSize))
-                let messageData = data.subdataWithRange(NSRange(location: blockSize, length: data.length - blockSize))
+            // Decrypt the key
+            if let decryptedKey = NSMutableData(length: blockSize) {
+                let encryptedKeyData = UnsafePointer<UInt8>(keyData.bytes)
+                var decryptedKeyData = UnsafeMutablePointer<UInt8>(decryptedKey.mutableBytes)
+                var decryptedLength = blockSize
                 
-                // Decrypt the key
-                if let decryptedKeyData = NSMutableData(length: blockSize) {
-                    let encryptedData = UnsafePointer<UInt8>(keyData.bytes)
-                    var decryptedData = UnsafeMutablePointer<UInt8>(decryptedKeyData.mutableBytes)
-                    var decryptedLength = blockSize
+                let keyStatus = SecKeyDecrypt(key, SecPadding(kSecPaddingPKCS1), encryptedKeyData, keyData.length, decryptedKeyData, &decryptedLength)
+                
+                if keyStatus == noErr {
+                    decryptedKey.length = Int(decryptedLength)
                     
-                    let keyStatus = SecKeyDecrypt(key, SecPadding(kSecPaddingPKCS1), encryptedData, keyData.length, decryptedData, &decryptedLength)
-                    
-                    if keyStatus == noErr {
-                        decryptedKeyData.length = Int(decryptedLength)
-                        
-                        // Decrypt the message
-                        if let message = Heimdall.decrypt(messageData, key: decryptedKeyData) {
-                            return NSString(data: message, encoding: NSUTF8StringEncoding) as? String
-                        }
+                    // Decrypt the message
+                    if let message = Heimdall.decrypt(messageData, key: decryptedKey) {
+                        return message
                     }
                 }
             }
@@ -238,16 +264,39 @@ public class Heimdall {
     ///
     /// Generate a signature for an arbitrary message
     ///
-    /// :param: message     Message to generate the signature for
+    /// :param: string      Message to generate the signature for
     /// :param: urlEncode   True if the resulting Base64 data should be URL encoded
     ///
     /// :returns: Signature as a Base64 string
     ///
-    public func sign(message: String, urlEncode: Bool = false) -> String? {
-        if let key = obtainKey(.Private), messageData = message.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), hash = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
+    public func sign(string: String, urlEncode: Bool = false) -> String? {
+        if let key = obtainKey(.Private), data = string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), signatureData = self.sign(data) {
+            
+            var signature = signatureData.base64EncodedStringWithOptions(.allZeros)
+            
+            if urlEncode {
+                signature = signature.stringByReplacingOccurrencesOfString("/", withString: "_")
+                signature = signature.stringByReplacingOccurrencesOfString("+", withString: "-")
+            }
+            
+            return signature
+        }
+        
+        return nil
+    }
+    
+    ///
+    /// Generate a signature for an arbitrary payload
+    ///
+    /// :param: data    Data to sign
+    ///
+    /// :returns: Signature as NSData
+    ///
+    public func sign(data: NSData) -> NSData? {
+        if let key = obtainKey(.Private), hash = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
             
             // Create SHA256 hash of the message
-            CC_SHA256(messageData.bytes, CC_LONG(messageData.length), UnsafeMutablePointer(hash.mutableBytes))
+            CC_SHA256(data.bytes, CC_LONG(data.length), UnsafeMutablePointer(hash.mutableBytes))
             
             // Sign the hash with the private key
             let blockSize = SecKeyGetBlockSize(key)
@@ -264,20 +313,14 @@ public class Heimdall {
                 if status == noErr {
                     // Create Base64 string of the result
                     result.length = encryptedDataLength
-                    var signature = result.base64EncodedStringWithOptions(.allZeros)
-                    
-                    if urlEncode {
-                        signature = signature.stringByReplacingOccurrencesOfString("/", withString: "_")
-                        signature = signature.stringByReplacingOccurrencesOfString("+", withString: "-")
-                    }
-                    
-                    return signature
+                    return result
                 }
             }
         }
         
         return nil
     }
+    
     
     ///
     /// Verify the message with the given signature
@@ -289,30 +332,41 @@ public class Heimdall {
     /// :returns: true if the signature is valid (and can be validated)
     ///
     public func verify(message: String, var signatureBase64: String, urlEncoded: Bool = true) -> Bool {
-        if let key = obtainKey(.Public) {
-            if urlEncoded {
-                signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("_", withString: "/")
-                signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("-", withString: "+")
-            }
+        if urlEncoded {
+            signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("_", withString: "/")
+            signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("-", withString: "+")
+        }
+
+        if let data = message.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), signature = NSData(base64EncodedString: signatureBase64, options: .allZeros) {
+            return self.verify(data, signatureData: signature)
+        }
+        
+        return false
+    }
+    
+    ///
+    /// Verify a data payload with the given signature
+    ///
+    /// :param: data            Data the signature should be verified against
+    /// :param: signatureData   Data of the signature
+    ///
+    /// :returns: True if the signature is valid
+    ///
+    public func verify(data: NSData, signatureData: NSData) -> Bool {
+        if let key = obtainKey(.Public), hashData = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
+            CC_SHA256(data.bytes, CC_LONG(data.length), UnsafeMutablePointer(hashData.mutableBytes))
             
-            if let signature = NSData(base64EncodedString: signatureBase64, options: .allZeros),
-                messageData = message.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false),
-                hashData = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
-                    
-                CC_SHA256(messageData.bytes, CC_LONG(messageData.length), UnsafeMutablePointer(hashData.mutableBytes))
-                
-                let signedData = UnsafePointer<UInt8>(hashData.bytes)
-                let signatureLength = Int(signature.length)
-                let signatureData = UnsafePointer<UInt8>(signature.bytes)
-                
-                let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1SHA256), signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
-                
-                switch result {
-                case noErr:
-                    return true
-                default:
-                    return false
-                }
+            let signedData = UnsafePointer<UInt8>(hashData.bytes)
+            let signatureLength = Int(signatureData.length)
+            let signatureData = UnsafePointer<UInt8>(signatureData.bytes)
+            
+            let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1SHA256), signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
+            
+            switch result {
+            case noErr:
+                return true
+            default:
+                return false
             }
         }
         
@@ -505,26 +559,24 @@ public class Heimdall {
     }
     
     
-    private class func encrypt(string: String, key: NSData) -> NSData? {
-        if let stringData = (string as NSString).dataUsingEncoding(NSUTF8StringEncoding) {
-            let data = UnsafePointer<UInt8>(stringData.bytes)
-            let dataLength = stringData.length
+    private class func encrypt(data: NSData, key: NSData) -> NSData? {
+        let dataBytes = UnsafePointer<UInt8>(data.bytes)
+        let dataLength = data.length
+        
+        if let result = NSMutableData(length: dataLength + kCCBlockSizeAES128) {
+            let keyData = UnsafePointer<UInt8>(key.bytes)
+            let keyLength = size_t(key.length)
             
-            if let result = NSMutableData(length: dataLength + kCCBlockSizeAES128) {
-                let keyData = UnsafePointer<UInt8>(key.bytes)
-                let keyLength = size_t(key.length)
-                
-                var encryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
-                let encryptedDataLength = size_t(result.length)
-                
-                var encryptedLength: size_t = 0
-                
-                let status = CCCrypt(CCOperation(kCCEncrypt), CCAlgorithm(kCCAlgorithmAES128), CCOptions(kCCOptionECBMode + kCCOptionPKCS7Padding), keyData, keyLength, nil, data, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
-                
-                if UInt32(status) == UInt32(kCCSuccess) {
-                    result.length = Int(encryptedLength)
-                    return result
-                }
+            var encryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
+            let encryptedDataLength = size_t(result.length)
+            
+            var encryptedLength: size_t = 0
+            
+            let status = CCCrypt(CCOperation(kCCEncrypt), CCAlgorithm(kCCAlgorithmAES128), CCOptions(kCCOptionECBMode + kCCOptionPKCS7Padding), keyData, keyLength, nil, dataBytes, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
+            
+            if UInt32(status) == UInt32(kCCSuccess) {
+                result.length = Int(encryptedLength)
+                return result
             }
         }
         
