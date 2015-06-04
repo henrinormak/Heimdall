@@ -126,7 +126,7 @@ public class Heimdall {
     ///
     /// :returns: Public key in X.509 format
     ///
-    public func X509PublicKey() -> NSData? {
+    public func publicKeyDataX509() -> NSData? {
         if let keyData = obtainKeyData(.Public) {
             return keyData.dataByPrependingX509Header()
         }
@@ -134,12 +134,22 @@ public class Heimdall {
         return nil
     }
     
+    ///
+    /// :returns: Public key components (modulus and exponent)
+    ///
     public func publicKeyComponents() -> (modulus: NSData, exponent: NSData)? {
         if let keyData = obtainKeyData(.Public), (modulus, exponent) = keyData.splitIntoComponents() {
             return (modulus, exponent)
         }
         
         return nil
+    }
+    
+    ///
+    /// :returns: Public key data
+    ///
+    public func publicKeyData() -> NSData? {
+        return obtainKeyData(.Public)
     }
     
     ///
