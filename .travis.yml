@@ -1,4 +1,4 @@
 language: objective-c
-xcode_project: Heimdall/Heimdall.xcodeproj
+xcode_project: Heimdall.xcodeproj
 xcode_scheme: Heimdall
 osx_image: beta-xcode6.3
