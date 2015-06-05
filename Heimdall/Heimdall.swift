@@ -39,8 +39,8 @@ import CommonCrypto
 
 public class Heimdall {
     private let publicTag: String
-    private let privateTag: String?
-    private let scope: ScopeOptions
+    private var privateTag: String?
+    private var scope: ScopeOptions
     
     /// 
     /// Create an instance with data for the public key,
@@ -383,18 +383,52 @@ public class Heimdall {
         return false
     }
     
+    // MARK: Managing the key pair
+    
     ///
     /// Remove the key pair this Heimdall represents
+    /// Does not regenerate the keys, thus the Heimdall
+    /// instance becomes useless after this call
     ///
     /// :returns: True if remove successfully
     ///
     public func destroy() -> Bool {
         if Heimdall.deleteKey(self.publicTag) {
-            if let privateTag = self.privateTag {
-                return Heimdall.deleteKey(privateTag)
+            self.scope = self.scope & ~(ScopeOptions.PublicKey)
+            
+            if let privateTag = self.privateTag where Heimdall.deleteKey(privateTag) {
+                self.scope = self.scope & ~(ScopeOptions.PrivateKey)
+                return true
             }
             
             return true
+        }
+        
+        return false
+    }
+    
+    ///
+    /// Delete existing key pair and regenerate new one
+    /// This will always fail for instances that don't have
+    /// a private key, including those that have been explicitly
+    /// destroyed beforehand
+    ///
+    /// :param: keySize     Size of keys in the new pair
+    ///
+    /// :returns: True if reset successfully
+    ///
+    public func regenerate(keySize: Int = 2048) -> Bool {
+        // Only if we currently have a private key in our control (or we think we have one)
+        if self.scope & ScopeOptions.PrivateKey != ScopeOptions.PrivateKey {
+            return false
+        }
+        
+        if let privateTag = self.privateTag where self.destroy() {
+            if Heimdall.generateKeyPair(self.publicTag, privateTag: privateTag, keySize: keySize) != nil {
+                // Restore our scope back to .All
+                self.scope = .All
+                return true
+            }
         }
         
         return false
