@@ -13,7 +13,7 @@ Furthermore, Heimdall also helps maintain the public-private RSA key-pair in Key
 
 ## Requirements
 
-This branch of Heimdall requires Swift 2, and is only compatible with iOS 8 and above.
+This branch of Heimdall requires Swift 2 and works with only Xcode 7 Beta (iOS 9 SDK)
 
 ## Installation
 
