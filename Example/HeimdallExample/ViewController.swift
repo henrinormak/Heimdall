@@ -73,7 +73,7 @@ class ViewController: UIViewController, UITextViewDelegate {
             self.view.setNeedsLayout()
             self.bottomConstraint.constant = CGRectGetHeight(intersection)
         
-            UIView.animateWithDuration(duration, delay: 0.0, options: UIViewAnimationOptions(curve), animations: { _ in
+            UIView.animateWithDuration(duration, delay: 0.0, options: UIViewAnimationOptions(rawValue: curve), animations: { _ in
                     self.view.setNeedsLayout()
                 }, completion: nil)
         }
