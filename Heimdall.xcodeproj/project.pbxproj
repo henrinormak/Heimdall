@@ -198,7 +198,6 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8E866C6D1AE8FBEC005682A2 /* Build configuration list for PBXNativeTarget "HeimdallTests" */;
 			buildPhases = (
-				8E7DE8351AF9712600FDE3A7 /* CommonCrypto Module Map */,
 				8E866C5B1AE8FBEC005682A2 /* Sources */,
 				8E866C5C1AE8FBEC005682A2 /* Frameworks */,
 				8E866C5D1AE8FBEC005682A2 /* Resources */,
@@ -219,12 +218,10 @@
 		8E866C4B1AE8FBEC005682A2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastUpgradeCheck = 0630;
+				LastSwiftUpdateCheck = 0700;
+				LastUpgradeCheck = 0700;
 				ORGANIZATIONNAME = "Henri Normak";
 				TargetAttributes = {
-					8E3830791AFE176A007E4235 = {
-						CreatedOnToolsVersion = 6.3.1;
-					};
 					8E866C531AE8FBEC005682A2 = {
 						CreatedOnToolsVersion = 6.3;
 					};
@@ -290,20 +287,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "mapsDirectory=$SRCROOT/CommonCrypto\nplatform=$PLATFORM_NAME\nmoduleMap=$mapsDirectory/$platform.modulemap\nmoduleMapComparison=$mapsDirectory/$platform.modulemap.tmp\n\nmkdir -p \"$mapsDirectory\"\n\ncat > \"$moduleMapComparison\" << MAP\nmodule CommonCrypto [system] {\n    header \"$SDKROOT/usr/include/CommonCrypto/CommonCrypto.h\"\n    export *\n}\nMAP\n\ndiff \"$moduleMapComparison\" \"$moduleMap\" >/dev/null 2>/dev/null\nif [[ $? != 0 ]] ; then\nmv \"$moduleMapComparison\" \"$moduleMap\"\nelse\nrm \"$moduleMapComparison\"\nfi";
-		};
-		8E7DE8351AF9712600FDE3A7 /* CommonCrypto Module Map */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputPaths = (
-			);
-			name = "CommonCrypto Module Map";
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "modulesDirectory=$DERIVED_FILES_DIR/modules\nmodulesMap=$modulesDirectory/module.modulemap\nmodulesMapTemp=$modulesDirectory/module.modulemap.tmp\n\nmkdir -p \"$modulesDirectory\"\n\ncat > \"$modulesMapTemp\" << MAP\nmodule CommonCrypto [system] {\n    header \"$SDKROOT/usr/include/CommonCrypto/CommonCrypto.h\"\n    export *\n}\nMAP\n\ndiff \"$modulesMapTemp\" \"$modulesMap\" >/dev/null 2>/dev/null\nif [[ $? != 0 ]] ; then\nmv \"$modulesMapTemp\" \"$modulesMap\"\nelse\nrm \"$modulesMapTemp\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -405,6 +388,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -490,6 +474,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hnormak.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = Heimdall;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -512,6 +497,7 @@
 					"$(inherited)",
 					"$(SDKROOT)/usr/lib/system",
 				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hnormak.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = Heimdall;
 				SKIP_INSTALL = YES;
 			};
@@ -530,6 +516,7 @@
 				);
 				INFOPLIST_FILE = HeimdallTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hnormak.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -543,6 +530,7 @@
 				);
 				INFOPLIST_FILE = HeimdallTests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.hnormak.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
