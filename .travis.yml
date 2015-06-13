@@ -1,2 +1,2 @@
 language: objective-c
-xcodebuild test -project Heimdall.xcodeproj -scheme Heimdall -destination \"platform=iOS Simulator,name=iPhone 6\"
+script: "xcodebuild test -project Heimdall.xcodeproj -scheme Heimdall -destination \"platform=iOS Simulator,name=iPhone 6\""
