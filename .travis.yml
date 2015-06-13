@@ -1,4 +1,2 @@
 language: objective-c
-xcode_project: Heimdall.xcodeproj
-xcode_scheme: Heimdall
-osx_image: beta-xcode6.3
+xcodebuild test -project Heimdall.xcodeproj -scheme Heimdall -destination \"platform=iOS Simulator,name=iPhone 6\"
