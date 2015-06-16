@@ -189,26 +189,38 @@ public class Heimdall {
     /// :returns: The encrypted data
     ///
     public func encrypt(data: NSData) -> NSData? {
-        if let publicKey = obtainKey(.Public), aesKey = Heimdall.generateSymmetricKey(Int(kCCKeySizeAES256)), encrypted = Heimdall.encrypt(data, key: aesKey) {
-            // Final resulting data
-            let result = NSMutableData()
-            
-            // Encrypt the AES key with our public key
+        if let publicKey = obtainKey(.Public) {
+            // Determine appropriate AES key size
             let blockSize = SecKeyGetBlockSize(publicKey)
-            var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
-            var encryptedLength = blockSize
-            var data = UnsafePointer<UInt8>(aesKey.bytes)
-            
-            switch SecKeyEncrypt(publicKey, SecPadding(kSecPaddingPKCS1), data, Int(aesKey.length), &encryptedData, &encryptedLength) {
-            case noErr:
-                result.appendBytes(&encryptedData, length: encryptedLength)
-            default:
-                return nil
+            let keySize: Int
+            if blockSize >= 256 {
+                keySize = Int(kCCKeySizeAES256)
+            } else if blockSize >= 192 {
+                keySize = Int(kCCKeySizeAES192)
+            } else {
+                keySize = Int(kCCKeySizeAES128)
             }
             
-            result.appendData(encrypted)
-            
-            return result
+            if let aesKey = Heimdall.generateSymmetricKey(keySize), encrypted = Heimdall.encrypt(data, key: aesKey, algorithm: CCAlgorithm(kCCAlgorithmAES128)) {
+                // Final resulting data
+                let result = NSMutableData()
+                
+                // Encrypt the AES key with our public key
+                var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
+                var encryptedLength = blockSize
+                var data = UnsafePointer<UInt8>(aesKey.bytes)
+                
+                switch SecKeyEncrypt(publicKey, SecPadding(kSecPaddingPKCS1), data, Int(aesKey.length), &encryptedData, &encryptedLength) {
+                case noErr:
+                    result.appendBytes(&encryptedData, length: encryptedLength)
+                default:
+                    return nil
+                }
+                
+                result.appendData(encrypted)
+                
+                return result
+            }
         }
         
         return nil
@@ -261,7 +273,7 @@ public class Heimdall {
                     decryptedKey.length = Int(decryptedLength)
                     
                     // Decrypt the message
-                    if let message = Heimdall.decrypt(messageData, key: decryptedKey) {
+                    if let message = Heimdall.decrypt(messageData, key: decryptedKey, algorithm: CCAlgorithm(kCCAlgorithmAES128)) {
                         return message
                     }
                 }
@@ -603,11 +615,11 @@ public class Heimdall {
     }
     
     
-    private class func encrypt(data: NSData, key: NSData) -> NSData? {
+    private class func encrypt(data: NSData, key: NSData, algorithm: CCAlgorithm) -> NSData? {
         let dataBytes = UnsafePointer<UInt8>(data.bytes)
         let dataLength = data.length
         
-        if let result = NSMutableData(length: dataLength + kCCBlockSizeAES128) {
+        if let result = NSMutableData(length: dataLength + key.length) {
             let keyData = UnsafePointer<UInt8>(key.bytes)
             let keyLength = size_t(key.length)
             
@@ -616,7 +628,7 @@ public class Heimdall {
             
             var encryptedLength: size_t = 0
             
-            let status = CCCrypt(CCOperation(kCCEncrypt), CCAlgorithm(kCCAlgorithmAES128), CCOptions(kCCOptionECBMode + kCCOptionPKCS7Padding), keyData, keyLength, nil, dataBytes, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
+            let status = CCCrypt(CCOperation(kCCEncrypt), algorithm, CCOptions(kCCOptionPKCS7Padding), keyData, keyLength, nil, dataBytes, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
             
             if UInt32(status) == UInt32(kCCSuccess) {
                 result.length = Int(encryptedLength)
@@ -627,7 +639,7 @@ public class Heimdall {
         return nil
     }
     
-    private class func decrypt(data: NSData, key: NSData) -> NSData? {
+    private class func decrypt(data: NSData, key: NSData, algorithm: CCAlgorithm) -> NSData? {
         let encryptedData = UnsafePointer<UInt8>(data.bytes)
         let encryptedDataLength = data.length
         
@@ -640,7 +652,7 @@ public class Heimdall {
             
             var decryptedLength: size_t = 0
             
-            let status = CCCrypt(CCOperation(kCCDecrypt), CCAlgorithm(kCCAlgorithmAES128), CCOptions(kCCOptionECBMode + kCCOptionPKCS7Padding), keyData, keyLength, nil, encryptedData, encryptedDataLength, decryptedData, decryptedDataLength, &decryptedLength)
+            let status = CCCrypt(CCOperation(kCCDecrypt), algorithm, CCOptions(kCCOptionPKCS7Padding), keyData, keyLength, nil, encryptedData, encryptedDataLength, decryptedData, decryptedDataLength, &decryptedLength)
             
             if UInt32(status) == UInt32(kCCSuccess) {
                 result.length = Int(decryptedLength)
