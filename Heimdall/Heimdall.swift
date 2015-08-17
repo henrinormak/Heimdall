@@ -208,9 +208,9 @@ public class Heimdall {
                 // Encrypt the AES key with our public key
                 var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
                 var encryptedLength = blockSize
-                var data = UnsafePointer<UInt8>(aesKey.bytes)
+                let data = UnsafePointer<UInt8>(aesKey.bytes)
                 
-                switch SecKeyEncrypt(publicKey, SecPadding(kSecPaddingPKCS1), data, Int(aesKey.length), &encryptedData, &encryptedLength) {
+                switch SecKeyEncrypt(publicKey, .PKCS1, data, Int(aesKey.length), &encryptedData, &encryptedLength) {
                 case noErr:
                     result.appendBytes(&encryptedData, length: encryptedLength)
                 default:
@@ -267,7 +267,7 @@ public class Heimdall {
                 let decryptedKeyData = UnsafeMutablePointer<UInt8>(decryptedKey.mutableBytes)
                 var decryptedLength = blockSize
                 
-                let keyStatus = SecKeyDecrypt(key, SecPadding(kSecPaddingPKCS1), encryptedKeyData, keyData.length, decryptedKeyData, &decryptedLength)
+                let keyStatus = SecKeyDecrypt(key, .PKCS1, encryptedKeyData, keyData.length, decryptedKeyData, &decryptedLength)
                 
                 if keyStatus == noErr {
                     decryptedKey.length = Int(decryptedLength)
@@ -330,7 +330,7 @@ public class Heimdall {
                 let encryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
                 var encryptedDataLength = blockSize
                 
-                let status = SecKeyRawSign(key, SecPadding(kSecPaddingPKCS1SHA256), hashData, hashDataLength, encryptedData, &encryptedDataLength)
+                let status = SecKeyRawSign(key, .PKCS1SHA256, hashData, hashDataLength, encryptedData, &encryptedDataLength)
                 
                 if status == noErr {
                     // Create Base64 string of the result
@@ -382,7 +382,7 @@ public class Heimdall {
             let signatureLength = Int(signatureData.length)
             let signatureData = UnsafePointer<UInt8>(signatureData.bytes)
             
-            let result = SecKeyRawVerify(key, SecPadding(kSecPaddingPKCS1SHA256), signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
+            let result = SecKeyRawVerify(key, .PKCS1SHA256, signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
             
             switch result {
             case noErr:
@@ -454,7 +454,7 @@ public class Heimdall {
         case Private
     }
     
-    private struct ScopeOptions: RawOptionSetType {
+    private struct ScopeOptions: OptionSetType {
         private var value: UInt
         
         init(_ rawValue: UInt) { self.value = rawValue }
@@ -464,11 +464,11 @@ public class Heimdall {
         var rawValue: UInt { return self.value }
         var boolValue: Bool { return self.value != 0 }
         
-        static var allZeros: ScopeOptions { return self(0) }
+        static var allZeros: ScopeOptions { return self.init(0) }
         
-        static var PublicKey: ScopeOptions { return self(1 << 0) }
-        static var PrivateKey: ScopeOptions { return self(1 << 1) }
-        static var All: ScopeOptions           { return self(0b11) }
+        static var PublicKey: ScopeOptions { return self.init(1 << 0) }
+        static var PrivateKey: ScopeOptions { return self.init(1 << 1) }
+        static var All: ScopeOptions           { return self.init(0b11) }
     }
     
     
@@ -500,7 +500,7 @@ public class Heimdall {
     //
     
     private class func obtainKey(tag: String) -> SecKeyRef? {
-        var keyRef: Unmanaged<AnyObject>?
+        var keyRef: AnyObject?
         let query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecReturnRef): kCFBooleanTrue as CFBoolean,
@@ -512,7 +512,7 @@ public class Heimdall {
         
         switch status {
         case noErr:
-            if let ref: AnyObject = keyRef?.takeRetainedValue() {
+            if let ref = keyRef {
                 return (ref as! SecKeyRef)
             }
         default:
@@ -523,7 +523,7 @@ public class Heimdall {
     }
     
     private class func obtainKeyData(tag: String) -> NSData? {
-        var keyRef: Unmanaged<AnyObject>?
+        var keyRef: AnyObject?
         let query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecReturnData): kCFBooleanTrue as CFBoolean,
@@ -535,7 +535,7 @@ public class Heimdall {
         
         switch SecItemCopyMatching(query, &keyRef) {
         case noErr:
-            result = Optional(keyRef?.takeRetainedValue() as! NSData)
+            result = keyRef as? NSData
         default:
             result = nil
         }
@@ -569,7 +569,7 @@ public class Heimdall {
         publicAttributes[String(kSecValueData)] = data as CFDataRef
         publicAttributes[String(kSecReturnPersistentRef)] = true as CFBooleanRef
         
-        var persistentRef = Unmanaged<AnyObject>?()
+        var persistentRef: AnyObject?
         let status = SecItemAdd(publicAttributes, &persistentRef)
         
         if status != noErr && status != errSecDuplicateItem {
@@ -591,12 +591,12 @@ public class Heimdall {
                               String(kSecPublicKeyAttrs): publicAttributes,
                               String(kSecPrivateKeyAttrs): privateAttributes]
         
-        var publicRef = Unmanaged<SecKey>?()
-        var privateRef = Unmanaged<SecKey>?()
+        var publicRef: SecKey?
+        var privateRef: SecKey?
         switch SecKeyGeneratePair(pairAttributes, &publicRef, &privateRef) {
             case noErr:
                 if let publicKey = publicRef, privateKey = privateRef {
-                    return (publicKey.takeRetainedValue(), privateKey.takeRetainedValue())
+                    return (publicKey, privateKey)
                 }
                 
                 return nil
@@ -660,6 +660,22 @@ public class Heimdall {
 
         return nil
     }
+}
+
+///
+/// Arithmetic
+///
+
+private func ==(lhs: Heimdall.ScopeOptions, rhs: Heimdall.ScopeOptions) -> Bool {
+    return lhs.rawValue == rhs.rawValue
+}
+
+private prefix func ~(op: Heimdall.ScopeOptions) -> Heimdall.ScopeOptions {
+    return Heimdall.ScopeOptions(~op.rawValue)
+}
+
+private func &(lhs: Heimdall.ScopeOptions, rhs: Heimdall.ScopeOptions) -> Heimdall.ScopeOptions {
+    return Heimdall.ScopeOptions(lhs.rawValue & rhs.rawValue)
 }
 
 ///

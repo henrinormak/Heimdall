@@ -45,21 +45,21 @@ class HeimdallTests: XCTestCase {
         customisedTags?.destroy()
         
         // Public key data based initialisation
-        let publicKeyData = NSData(base64EncodedString: "MIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: .allZeros)!
+        let publicKeyData = NSData(base64EncodedString: "MIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: [])!
         let pubData = Heimdall(publicTag: "public.initialisation", publicKeyData: publicKeyData)
         XCTAssertNotNil(pubData)
         pubData?.destroy()
         
         // Public key components based initialisation
-        let pubKeyModulus = NSData(base64EncodedString: "ANg3YOIwixO1T8Sz4wWkzx9w0l6ZCUD9yeSsnGQVBeHcliU3mPJuR8k60Y/g5ubd3HKTyUnfjo7qR3VI/gbS/vIPjTnXZlAq9IJkLMbF8fHsfpUvsB4EQZh/wm/+ZWdTJezprcrM/Bv6cOixmCvQtLNGaFDgAKb/6wvb0NU/EtHiTySAfKx7H5768ZAvQsJH7buaTiL+X6q47Ay6p9HS8qVsk/AIR0nYEWZ9OufHn08j8rX57tv9V4js8wmzcTxMb/p/H6tZJM0iIPfoDe7bz8/oKW79XkLA5AK6xsfN/BKlvKOXFGxgNw7ZRlgK+HSk3t8mONAgOeQDM/5b5lNHZ0c=", options: .allZeros)!
-        let pubKeyExponent = NSData(base64EncodedString: "AQAB", options: .allZeros)!
+        let pubKeyModulus = NSData(base64EncodedString: "ANg3YOIwixO1T8Sz4wWkzx9w0l6ZCUD9yeSsnGQVBeHcliU3mPJuR8k60Y/g5ubd3HKTyUnfjo7qR3VI/gbS/vIPjTnXZlAq9IJkLMbF8fHsfpUvsB4EQZh/wm/+ZWdTJezprcrM/Bv6cOixmCvQtLNGaFDgAKb/6wvb0NU/EtHiTySAfKx7H5768ZAvQsJH7buaTiL+X6q47Ay6p9HS8qVsk/AIR0nYEWZ9OufHn08j8rX57tv9V4js8wmzcTxMb/p/H6tZJM0iIPfoDe7bz8/oKW79XkLA5AK6xsfN/BKlvKOXFGxgNw7ZRlgK+HSk3t8mONAgOeQDM/5b5lNHZ0c=", options: [])!
+        let pubKeyExponent = NSData(base64EncodedString: "AQAB", options: [])!
         
         let pubComponents = Heimdall(publicTag: "public.components.initialisation", publicKeyModulus: pubKeyModulus, publicKeyExponent: pubKeyExponent)
         XCTAssertNotNil(pubComponents)
         pubComponents?.destroy()
         
         // Public X.509 data based initialisation
-        let publicKeyX509 = NSData(base64EncodedString: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: .allZeros)!
+        let publicKeyX509 = NSData(base64EncodedString: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: [])!
         
         let pubX509 = Heimdall(publicTag: "public.x509.initialisation", publicKeyData: publicKeyX509)
         XCTAssertNotNil(pubX509)
