@@ -118,6 +118,14 @@ if let heimdall = Heimdall(tagPrefix: "com.example") {
 }
 ```
 
+### Note on encryption/decryption
+
+As RSA imposes a limit on the length of message that can be enrcypted, Heimdall uses a mix of AES and RSA to encrypt messages of arbitrary length. This is done in the following manner:
+1. A random AES key of suitable length is generated, the length is based on the size of the RSA key pair (either 128, 192 or 256 bits) [*](https://github.com/henrinormak/Heimdall/blob/master/Heimdall/Heimdall.swift#L194-L202)
+2. The message is encrypted with this AES key
+3. The key is encrypted with the public part of the RSA key pair (and padded to the correct block size) [*](https://github.com/henrinormak/Heimdall/blob/master/Heimdall/Heimdall.swift#L213-L218)
+4. The payload is built, containing the encrypted key, followed by the encrypted message. During decryption, the first block is always assumed to be the RSA encrypted AES key, this is why Heimdall can only decrypt messages encrypted by other Heimdall instances (or code that is compatible with Heimdall's logic) [*](https://github.com/henrinormak/Heimdall/blob/master/Heimdall/Heimdall.swift#L259-L262)
+
 ### Complex use case
 
 A more complex use case involves exchanging encrypted messages between multiple Heimdall instances, which can be situated on multiple different hosts.
