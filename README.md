@@ -135,18 +135,17 @@ First step is to share your public key with another party:
 
 ```swift
 let localHeimdall = Heimdall(tagPrefix: "com.example")
-
-if let heimdall = localHeimdall {
-    let publicKeyData = heimdall.X509PublicKey()
+if let heimdall = localHeimdall, publicKeyData = heimdall.publicKeyDataX509() {
+    
     var publicKeyString = publicKeyData.base64EncodedStringWithOptions(.allZeros)
-
+    
     // If you want to make this string URL safe,
     // you have to remember to do the reverse on the other side later
     publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("/", withString: "_")
     publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("+", withString: "-")
-
+    
     println(publicKeyString) // Something along the lines of "MIGfMA0GCSqGSIb3DQEBAQUAA..."
-
+    
     // Data transmission of public key to the other party
 }
 ```
