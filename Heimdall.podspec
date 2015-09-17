@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name        = "Heimdall"
-  s.version     = "0.1.8"
+  s.version     = "0.2.0"
   s.summary     = "Heimdall is a wrapper around the Security framework for simple encryption/decryption operations."
   s.license     = { :type => "MIT", :file => "LICENSE" }
 
@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   s.author              = { "Henri Normak" => "henri.normak@gmail.com" }
   s.social_media_url    = "http://twitter.com/henrinormak"
 
-  s.platform     = :ios, "8.0"
+  s.platform     = :ios, "9.0"
 
   s.source       = { :git => "https://github.com/henrinormak/Heimdall.git", :tag => s.version.to_s }
 
