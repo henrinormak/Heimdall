@@ -14,7 +14,7 @@ Furthermore, Heimdall also helps maintain the public-private RSA key-pair in Key
 
 ## Requirements
 
-This branch of Heimdall requires Swift 2 and works with only Xcode 7 Beta (iOS 9 SDK)
+Heimdall requires Swift 2 and works with only Xcode 7 and above
 
 ## Installation
 
@@ -23,7 +23,7 @@ This branch of Heimdall requires Swift 2 and works with only Xcode 7 Beta (iOS 9
 Heimdall is available as a CocoaPod, simply add the following line to your Podfile
 
 ```ruby
-pod 'Heimdall', :git => 'http://github.com/henrinormak/Heimdall', :branch => 'swift-2'
+pod 'Heimdall', '~> 0.2.0'
 ```
 
 Also, make sure your podfile includes the following line, which is necessary to support Swift frameworks
@@ -37,7 +37,7 @@ use_frameworks!
 Simply include the following line in your Cartfile
 
 ```
-github "henrinormak/Heimdall" "swift-2"
+github "henrinormak/Heimdall"
 ```
 
 Note that Heimdall produces two frameworks in the Carthage build directory - `Heimdall.framework` and `CommonCrypto.framework`, you only need to include/embed `Heimdall.framework` into your project.
