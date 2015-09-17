@@ -751,20 +751,20 @@ private extension NSData {
         
         // Container type and size
         builder.append(0x30)
-        builder.extend(totalLengthOctets)
+        builder.appendContentsOf(totalLengthOctets)
         data.appendBytes(builder, length: builder.count)
         builder.removeAll(keepCapacity: false)
         
         // Modulus
         builder.append(0x02)
-        builder.extend(modulusLengthOctets)
+        builder.appendContentsOf(modulusLengthOctets)
         data.appendBytes(builder, length: builder.count)
         builder.removeAll(keepCapacity: false)
         data.appendBytes(modulusBytes, length: modulusBytes.count)
         
         // Exponent
         builder.append(0x02)
-        builder.extend(exponentLengthOctets)
+        builder.appendContentsOf(exponentLengthOctets)
         data.appendBytes(builder, length: builder.count)
         data.appendBytes(exponentBytes, length: exponentBytes.count)
         
@@ -822,13 +822,13 @@ private extension NSData {
         // Overall size, made of OID + bitstring encoding + actual key
         let size = OID.count + 2 + encodingLength + self.length
         let encodedSize = size.encodedOctets()
-        builder.extend(encodedSize)
+        builder.appendContentsOf(encodedSize)
         result.appendBytes(builder, length: builder.count)
         result.appendBytes(OID, length: OID.count)
         builder.removeAll(keepCapacity: false)
         
         builder.append(0x03)
-        builder.extend((self.length + 1).encodedOctets())
+        builder.appendContentsOf((self.length + 1).encodedOctets())
         builder.append(0x00)
         result.appendBytes(builder, length: builder.count)
         
