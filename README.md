@@ -118,46 +118,63 @@ if let heimdall = Heimdall(tagPrefix: "com.example") {
 }
 ```
 
+### Note on encryption/decryption
+
+As RSA imposes a limit on the length of message that can be enrcypted, Heimdall uses a mix of AES and RSA to encrypt messages of arbitrary length. This is done in the following manner:
+
+1. A random AES key of suitable length is generated, the length is based on the size of the RSA key pair (either 128, 192 or 256 bits) [*](https://github.com/henrinormak/Heimdall/blob/master/Heimdall/Heimdall.swift#L194-L202)
+2. The message is encrypted with this AES key
+3. The key is encrypted with the public part of the RSA key pair (and padded to the correct block size) [*](https://github.com/henrinormak/Heimdall/blob/master/Heimdall/Heimdall.swift#L213-L218)
+4. The payload is built, containing the encrypted key, followed by the encrypted message. During decryption, the first block is always assumed to be the RSA encrypted AES key, this is why Heimdall can only decrypt messages encrypted by other Heimdall instances (or code that is compatible with Heimdall's logic) [*](https://github.com/henrinormak/Heimdall/blob/master/Heimdall/Heimdall.swift#L259-L262)
+
 ### Complex use case
 
 A more complex use case involves exchanging encrypted messages between multiple Heimdall instances, which can be situated on multiple different hosts.
 
-The workflow should be mirrored on all hosts, extracting their public keys and sharing those to all other parties. The public keys can be used to construct special Heimdall instances that are only able to encrypt messages and verify signatures.
+First step is to share your public key with another party:
 
 ```swift
 let localHeimdall = Heimdall(tagPrefix: "com.example")
-
-if let heimdall = localHeimdall {
-    let publicKeyData = heimdall.X509PublicKey()
+if let heimdall = localHeimdall, publicKeyData = heimdall.publicKeyDataX509() {
+    
     var publicKeyString = publicKeyData.base64EncodedStringWithOptions(.allZeros)
-
+    
     // If you want to make this string URL safe,
     // you have to remember to do the reverse on the other side later
     publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("/", withString: "_")
     publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("+", withString: "-")
-
+    
     println(publicKeyString) // Something along the lines of "MIGfMA0GCSqGSIb3DQEBAQUAA..."
-
+    
     // Data transmission of public key to the other party
 }
+```
 
+Second step, acting as the recipient (the one that wants to send the encrypted message), you receive the public key extracted and create a matching Heimdall instance:
+
+```swift
 // On other party, assuming keyData contains the received public key data
 if let partnerHeimdall = Heimdall(publicTag: "com.example.partner", publicKeyData: keyData) {
     // Transmit some message to the partner
     let message = "This is a secret message to my partner"
     let encryptedMessage = partnerHeimdall.encrypt(message)
 
-    // Transmit the encryptedMessage
+    // Transmit the encryptedMessage back to the origin of the public key
 }
+```
 
+Finally, having received the encrypted message, the party that sent out the public key can decrypt it using the original Heimdall instance they had:
+
+```swift
 // Initial host receives encryptedMessage
 if let heimdall = localHeimdall {
     if let decryptedMessage = heimdall.decrypt(encryptedMessage) {
         println(decryptedMessage) // "This is a secret message to my partner"
     }
 }
-
 ```
+
+The workflow should be mirrored on all hosts, extracting their public keys and sharing those to all other parties. The public keys can be used to construct special Heimdall instances that are only able to encrypt messages and verify signatures.
 
 ## Contributing and Current Work
 
