@@ -18,7 +18,7 @@ Pod::Spec.new do |s|
   s.author              = { "Henri Normak" => "henri.normak@gmail.com" }
   s.social_media_url    = "http://twitter.com/henrinormak"
 
-  s.platform     = :ios, "9.0"
+  s.platform     = :ios, "8.0"
 
   s.source       = { :git => "https://github.com/henrinormak/Heimdall.git", :tag => s.version.to_s }
 
