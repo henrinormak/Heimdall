@@ -58,6 +58,12 @@ class HeimdallTests: XCTestCase {
         XCTAssertNotNil(pubComponents)
         pubComponents?.destroy()
         
+        // Non-null starting modulus
+        let alternativePubKeyModulus = NSData(base64EncodedString: "3JvrTKthRgmLnmugBwN3z3MCh9WiDIv+GX0rm181taXimmz/ZKP8kfuaZL4eLnqCejCM8CEKhX+2tJRpIrht360Sx7gBii5TUibumfMxTEZb/+1aGZCA/a/JjZUOrvGABDYqqn5FdZ7RFgrUtQsnpM7is0UXtV86omPw9Fh8HwU=", options: [])!
+        let pubAlternativeComponents = Heimdall(publicTag: "public.components.alternative.initialisation", publicKeyModulus: alternativePubKeyModulus, publicKeyExponent: pubKeyExponent)
+        XCTAssertNotNil(pubAlternativeComponents)
+        pubAlternativeComponents?.destroy()
+        
         // Public X.509 data based initialisation
         let publicKeyX509 = NSData(base64EncodedString: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: [])!
         

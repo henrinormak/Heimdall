@@ -23,7 +23,7 @@ Heimdall requires Swift 2 and works with only Xcode 7 and above
 Heimdall is available as a CocoaPod, simply add the following line to your Podfile
 
 ```ruby
-pod 'Heimdall', '~> 0.2.0'
+pod 'Heimdall', '~> 0.2.1'
 ```
 
 Also, make sure your podfile includes the following line, which is necessary to support Swift frameworks
@@ -136,16 +136,16 @@ First step is to share your public key with another party:
 ```swift
 let localHeimdall = Heimdall(tagPrefix: "com.example")
 if let heimdall = localHeimdall, publicKeyData = heimdall.publicKeyDataX509() {
-    
+
     var publicKeyString = publicKeyData.base64EncodedStringWithOptions(.allZeros)
-    
+
     // If you want to make this string URL safe,
     // you have to remember to do the reverse on the other side later
     publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("/", withString: "_")
     publicKeyString = publicKeyString.stringByReplacingOccurrencesOfString("+", withString: "-")
-    
+
     println(publicKeyString) // Something along the lines of "MIGfMA0GCSqGSIb3DQEBAQUAA..."
-    
+
     // Data transmission of public key to the other party
 }
 ```

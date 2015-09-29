@@ -735,8 +735,13 @@ private extension NSInteger {
 private extension NSData {
     convenience init(modulus: NSData, exponent: NSData) {
         // Make sure neither the modulus nor the exponent start with a null byte
-        let modulusBytes = [CUnsignedChar](UnsafeBufferPointer<CUnsignedChar>(start: UnsafePointer<CUnsignedChar>(modulus.bytes), count: modulus.length / sizeof(CUnsignedChar)))
+        var modulusBytes = [CUnsignedChar](UnsafeBufferPointer<CUnsignedChar>(start: UnsafePointer<CUnsignedChar>(modulus.bytes), count: modulus.length / sizeof(CUnsignedChar)))
         let exponentBytes = [CUnsignedChar](UnsafeBufferPointer<CUnsignedChar>(start: UnsafePointer<CUnsignedChar>(exponent.bytes), count: exponent.length / sizeof(CUnsignedChar)))
+        
+        // Make sure modulus starts with a 0x00
+        if let prefix = modulusBytes.first where prefix != 0x00 {
+            modulusBytes.insert(0x00, atIndex: 0)
+        }
         
         // Lengths
         let modulusLengthOctets = modulusBytes.count.encodedOctets()
