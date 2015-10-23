@@ -46,12 +46,12 @@ public class Heimdall {
     /// Create an instance with data for the public key,
     /// the keychain is updated with the tag given (call .destroy() to remove)
     ///
-    /// :params: publicTag      Tag of the public key, keychain is checked for existing key (updated if data 
+    /// - parameters:
+    ///     - publicTag: Tag of the public key, keychain is checked for existing key (updated if data
     /// provided is non-nil and does not match)
+    ///     - publicKeyData: Bits of the public key, can include the X509 header (will be stripped)
     ///
-    /// :params: publicKeyData  Bits of the public key, can include the X509 header (will be stripped)
-    ///
-    /// :returns: Heimdall instance that can handle only public key operations
+    /// - returns: Heimdall instance that can handle only public key operations
     ///
     public convenience init?(publicTag: String, publicKeyData: NSData? = nil) {
         if let existingData = Heimdall.obtainKeyData(publicTag) {
@@ -75,11 +75,12 @@ public class Heimdall {
     /// Create an instance with the modulus and exponent of the public key
     /// the resulting key is added to the keychain (call .destroy() to remove)
     ///
-    /// :params: publicTag          Tag of the public key, see data based initialiser for details
-    /// :params: publicKeyModulus   Modulus of the public key
-    /// :params: publicKeyExponent  Exponent of the public key
+    /// - parameters:
+    ///     - publicTag: Tag of the public key, see data based initialiser for details
+    ///     - publicKeyModulus: Modulus of the public key
+    ///     - publicKeyExponent: Exponent of the public key
     ///
-    /// :returns: Heimdall instance that can handle only public key operations
+    /// - returns: Heimdall instance that can handle only public key operations
     ///
     public convenience init?(publicTag: String, publicKeyModulus: NSData, publicKeyExponent: NSData) {
         // Combine the data into one that we can use for initialisation
@@ -91,7 +92,11 @@ public class Heimdall {
     /// Shorthand for creating an instance with both public and private key, where the tag
     /// for private key is automatically generated
     ///
-    /// :returns: Heimdall instance that can handle both private and public key operations
+    /// - parameters
+    ///     - tagPrefix: Prefix to use for the private/public keys in Keychain
+    ///     - keySize: Size of the RSA key pair
+    ///
+    /// - returns: Heimdall instance that can handle both private and public key operations
     ///
     public convenience init?(tagPrefix: String, keySize: Int = 2048) {
         self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private")
@@ -101,7 +106,12 @@ public class Heimdall {
     /// Create an instane with public and private key tags, if the key pair does not exist
     /// the keys will be generated
     ///
-    /// :returns: Heimdall instance ready for both public and private key operations
+    /// - parameters:
+    ///     - publicTag: Tag to use for the public key
+    ///     - privateTag: Tag to use for the private key
+    ///     - keySize: Size of the RSA key pair
+    ///
+    /// - returns: Heimdall instance ready for both public and private key operations
     ///
     public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048) {
         self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag)
@@ -124,7 +134,7 @@ public class Heimdall {
     //
     
     ///
-    /// :returns: Public key in X.509 format
+    /// - returns: Public key in X.509 format
     ///
     public func publicKeyDataX509() -> NSData? {
         if let keyData = obtainKeyData(.Public) {
@@ -135,7 +145,7 @@ public class Heimdall {
     }
     
     ///
-    /// :returns: Public key components (modulus and exponent)
+    /// - returns: Public key components (modulus and exponent)
     ///
     public func publicKeyComponents() -> (modulus: NSData, exponent: NSData)? {
         if let keyData = obtainKeyData(.Public), (modulus, exponent) = keyData.splitIntoComponents() {
@@ -146,7 +156,7 @@ public class Heimdall {
     }
     
     ///
-    /// :returns: Public key data
+    /// - returns: Public key data
     ///
     public func publicKeyData() -> NSData? {
         return obtainKeyData(.Public)
@@ -157,10 +167,11 @@ public class Heimdall {
     /// is generated for a particular process and then encrypted with the
     /// public key from the RSA pair and prepended to the resulting data
     ///
-    /// :param: string      Input string to be encrypted
-    /// :param: urlEncode   If true, resulting Base64 string is URL encoded
+    /// - parameters:
+    ///     - string: Input string to be encrypted
+    ///     - urlEncode: If true, resulting Base64 string is URL encoded
     ///
-    /// :returns: The encrypted data, as Base64 string
+    /// - returns: The encrypted data, as Base64 string
     ///
     public func encrypt(string: String, urlEncode: Bool = false) -> String? {
         if let data = string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), encrypted = self.encrypt(data) {
@@ -184,9 +195,10 @@ public class Heimdall {
     /// is generated for a particular process and then encrypted with the
     /// public key from the RSA pair and prepended to the resulting data
     ///
-    /// :param: data      Input data to be encrypted
+    /// - parameters:
+    ///     - data: Input data to be encrypted
     ///
-    /// :returns: The encrypted data
+    /// - returns: The encrypted data
     ///
     public func encrypt(data: NSData) -> NSData? {
         if let publicKey = obtainKey(.Public) {
@@ -229,10 +241,11 @@ public class Heimdall {
     ///
     /// Decrypt a Base64 string representation of encrypted data
     ///
-    /// :param: base64String    string containing Base64 data to decrypt
-    /// :param: urlEncoded      whether the input Base64 data is URL encoded
+    /// - parameters:
+    ///     - base64String: String containing Base64 data to decrypt
+    ///     - urlEncoded: Whether the input Base64 data is URL encoded
     ///
-    /// :returns: Decrypted string as plain text
+    /// - returns: Decrypted string as plain text
     ///
     public func decrypt(var base64String: String, urlEncoded: Bool = true) -> String? {
         if urlEncoded {
@@ -250,9 +263,10 @@ public class Heimdall {
     ///
     /// Decrypt the encrypted data
     ///
-    /// :param: encryptedData   Data to decrypt
+    /// - parameters:
+    ///     - encryptedData: Data to decrypt
     ///
-    /// :returns: The decrypted data, or nil if failed
+    /// - returns: The decrypted data, or nil if failed
     ///
     public func decrypt(encryptedData: NSData) -> NSData? {
         if let key = obtainKey(.Private) {
@@ -286,10 +300,11 @@ public class Heimdall {
     ///
     /// Generate a signature for an arbitrary message
     ///
-    /// :param: string      Message to generate the signature for
-    /// :param: urlEncode   True if the resulting Base64 data should be URL encoded
+    /// - parameters:
+    ///     - string: Message to generate the signature for
+    ///     - urlEncode: True if the resulting Base64 data should be URL encoded
     ///
-    /// :returns: Signature as a Base64 string
+    /// - returns: Signature as a Base64 string
     ///
     public func sign(string: String, urlEncode: Bool = false) -> String? {
         if let data = string.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), signatureData = self.sign(data) {
@@ -310,9 +325,10 @@ public class Heimdall {
     ///
     /// Generate a signature for an arbitrary payload
     ///
-    /// :param: data    Data to sign
+    /// - parameters:
+    ///     - data: Data to sign
     ///
-    /// :returns: Signature as NSData
+    /// - returns: Signature as NSData
     ///
     public func sign(data: NSData) -> NSData? {
         if let key = obtainKey(.Private), hash = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
@@ -347,11 +363,12 @@ public class Heimdall {
     ///
     /// Verify the message with the given signature
     ///
-    /// :param: message             Message that was used to generate the signature
-    /// :param: signatureBase64     Base64 of the signature data, signature is made of the SHA256 hash of message
-    /// :param: urlEncoded          True, if the signature is URL encoded and has to be reversed before manipulating
+    /// - parameters:
+    ///     - message: Message that was used to generate the signature
+    ///     - signatureBase64: Base64 of the signature data, signature is made of the SHA256 hash of message
+    ///     - urlEncoded: True, if the signature is URL encoded and has to be reversed before manipulating
     ///
-    /// :returns: true if the signature is valid (and can be validated)
+    /// - returns: true if the signature is valid (and can be validated)
     ///
     public func verify(message: String, var signatureBase64: String, urlEncoded: Bool = true) -> Bool {
         if urlEncoded {
@@ -369,10 +386,11 @@ public class Heimdall {
     ///
     /// Verify a data payload with the given signature
     ///
-    /// :param: data            Data the signature should be verified against
-    /// :param: signatureData   Data of the signature
+    /// - parameters:
+    ///     - data: Data the signature should be verified against
+    ///     - signatureData: Data of the signature
     ///
-    /// :returns: True if the signature is valid
+    /// - returns: True if the signature is valid
     ///
     public func verify(data: NSData, signatureData: NSData) -> Bool {
         if let key = obtainKey(.Public), hashData = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
@@ -402,7 +420,7 @@ public class Heimdall {
     /// Does not regenerate the keys, thus the Heimdall
     /// instance becomes useless after this call
     ///
-    /// :returns: True if remove successfully
+    /// - returns: True if remove successfully
     ///
     public func destroy() -> Bool {
         if Heimdall.deleteKey(self.publicTag) {
@@ -425,9 +443,10 @@ public class Heimdall {
     /// a private key, including those that have been explicitly
     /// destroyed beforehand
     ///
-    /// :param: keySize     Size of keys in the new pair
+    /// - parameters:
+    ///     - keySize: Size of keys in the new pair
     ///
-    /// :returns: True if reset successfully
+    /// - returns: True if reset successfully
     ///
     public func regenerate(keySize: Int = 2048) -> Bool {
         // Only if we currently have a private key in our control (or we think we have one)
