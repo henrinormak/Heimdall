@@ -99,7 +99,7 @@ public class Heimdall {
     /// - returns: Heimdall instance that can handle both private and public key operations
     ///
     public convenience init?(tagPrefix: String, keySize: Int = 2048) {
-        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private")
+        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize)
     }
     
     ///
