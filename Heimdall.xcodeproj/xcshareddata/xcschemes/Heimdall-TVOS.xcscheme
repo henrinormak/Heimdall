@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "59B003041BE2D9E50020EF3D"
-               BuildableName = "CommonCrypto.framework"
-               BlueprintName = "CommonCrypto-TVOS"
+               BlueprintIdentifier = "59B0020D1BE2D1410020EF3D"
+               BuildableName = "Heimdall.framework"
+               BlueprintName = "Heimdall-TVOS"
                ReferencedContainer = "container:Heimdall.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -45,9 +45,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "59B003041BE2D9E50020EF3D"
-            BuildableName = "CommonCrypto.framework"
-            BlueprintName = "CommonCrypto-TVOS"
+            BlueprintIdentifier = "59B0020D1BE2D1410020EF3D"
+            BuildableName = "Heimdall.framework"
+            BlueprintName = "Heimdall-TVOS"
             ReferencedContainer = "container:Heimdall.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -63,9 +63,9 @@
       <MacroExpansion>
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "59B003041BE2D9E50020EF3D"
-            BuildableName = "CommonCrypto.framework"
-            BlueprintName = "CommonCrypto-TVOS"
+            BlueprintIdentifier = "59B0020D1BE2D1410020EF3D"
+            BuildableName = "Heimdall.framework"
+            BlueprintName = "Heimdall-TVOS"
             ReferencedContainer = "container:Heimdall.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
