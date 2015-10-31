@@ -8,3 +8,5 @@
 
 MODULEMAP_FILE[sdk=iphoneos*] = $(SRCROOT)/CommonCrypto/iphoneos.modulemap
 MODULEMAP_FILE[sdk=iphonesimulator*] = $(SRCROOT)/CommonCrypto/iphonesimulator.modulemap
+MODULEMAP_FILE[sdk=appletvos*] = $(SRCROOT)/CommonCrypto/appletvos.modulemap
+MODULEMAP_FILE[sdk=appletvsimulator*] = $(SRCROOT)/CommonCrypto/appletvsimulator.modulemap
