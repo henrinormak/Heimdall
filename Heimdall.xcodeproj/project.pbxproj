@@ -38,13 +38,6 @@
 			remoteGlobalIDString = 8E3830791AFE176A007E4235;
 			remoteInfo = CommonCrypto;
 		};
-		8E8AD3251BE4B8B60099C024 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 8E866C4B1AE8FBEC005682A2 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 59B0020D1BE2D1410020EF3D;
-			remoteInfo = "Heimdall-TVOS";
-		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
@@ -257,7 +250,6 @@
 			buildRules = (
 			);
 			dependencies = (
-				8E8AD3261BE4B8B60099C024 /* PBXTargetDependency */,
 				8E866C621AE8FBEC005682A2 /* PBXTargetDependency */,
 			);
 			name = HeimdallTests;
@@ -403,11 +395,6 @@
 			isa = PBXTargetDependency;
 			target = 8E3830791AFE176A007E4235 /* CommonCrypto */;
 			targetProxy = 8E8AD3231BE4B7A60099C024 /* PBXContainerItemProxy */;
-		};
-		8E8AD3261BE4B8B60099C024 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 59B0020D1BE2D1410020EF3D /* Heimdall-TVOS */;
-			targetProxy = 8E8AD3251BE4B8B60099C024 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
