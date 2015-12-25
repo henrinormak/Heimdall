@@ -163,6 +163,13 @@ public class Heimdall {
     }
     
     ///
+    /// - returns: Private key data
+    ///
+    public func privateKeyData() -> NSData? {
+        return obtainKeyData(.Private)
+    }
+    
+    ///
     /// Encrypt an arbitrary string using AES256, the key for which
     /// is generated for a particular process and then encrypted with the
     /// public key from the RSA pair and prepended to the resulting data
