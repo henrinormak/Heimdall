@@ -247,13 +247,15 @@ public class Heimdall {
     ///
     /// - returns: Decrypted string as plain text
     ///
-    public func decrypt(var base64String: String, urlEncoded: Bool = true) -> String? {
+    public func decrypt(base64String: String, urlEncoded: Bool = true) -> String? {
+        var string = base64String
+        
         if urlEncoded {
-            base64String = base64String.stringByReplacingOccurrencesOfString("_", withString: "/")
-            base64String = base64String.stringByReplacingOccurrencesOfString("-", withString: "+")
+            string = string.stringByReplacingOccurrencesOfString("_", withString: "/")
+            string = string.stringByReplacingOccurrencesOfString("-", withString: "+")
         }
         
-        if let data = NSData(base64EncodedString: base64String, options: NSDataBase64DecodingOptions(rawValue: 0)), decryptedData = self.decrypt(data) {
+        if let data = NSData(base64EncodedString: string, options: NSDataBase64DecodingOptions(rawValue: 0)), decryptedData = self.decrypt(data) {
             return NSString(data: decryptedData, encoding: NSUTF8StringEncoding) as? String
         }
         
@@ -370,13 +372,15 @@ public class Heimdall {
     ///
     /// - returns: true if the signature is valid (and can be validated)
     ///
-    public func verify(message: String, var signatureBase64: String, urlEncoded: Bool = true) -> Bool {
+    public func verify(message: String, signatureBase64: String, urlEncoded: Bool = true) -> Bool {
+        var string = signatureBase64
+        
         if urlEncoded {
-            signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("_", withString: "/")
-            signatureBase64 = signatureBase64.stringByReplacingOccurrencesOfString("-", withString: "+")
+            string = string.stringByReplacingOccurrencesOfString("_", withString: "/")
+            string = string.stringByReplacingOccurrencesOfString("-", withString: "+")
         }
 
-        if let data = message.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), signature = NSData(base64EncodedString: signatureBase64, options: NSDataBase64DecodingOptions(rawValue: 0)) {
+        if let data = message.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false), signature = NSData(base64EncodedString: string, options: NSDataBase64DecodingOptions(rawValue: 0)) {
             return self.verify(data, signatureData: signature)
         }
         
@@ -712,7 +716,7 @@ private extension NSInteger {
         var len = self
         var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
         
-        for (var j = 0; j < i; j++) {
+        for _ in 0..<i {
             result.insert(CUnsignedChar(len & 0xFF), atIndex: 1)
             len = len >> 8
         }
@@ -814,16 +818,22 @@ private extension NSData {
         // Total length of the container
         if let _ = NSInteger(octetBytes: keyBytes, startIdx: &i) {
             // First component is the modulus
-            if keyBytes[i++] == 0x02, let modulusLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
-                let modulus = self.subdataWithRange(NSMakeRange(i, modulusLength))
-                i += modulusLength
-                
-                // Second should be the exponent
-                if keyBytes[i++] == 0x02, let exponentLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
-                    let exponent = self.subdataWithRange(NSMakeRange(i, exponentLength))
-                    i += exponentLength
+            if keyBytes[i] == 0x02 {
+                i += 1
+                if let modulusLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
+                    let modulus = self.subdataWithRange(NSMakeRange(i, modulusLength))
+                    i += modulusLength
                     
-                    return (modulus, exponent)
+                    // Second should be the exponent
+                    if keyBytes[i] == 0x02 {
+                        i += 1
+                        if let exponentLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
+                            let exponent = self.subdataWithRange(NSMakeRange(i, exponentLength))
+                            i += exponentLength
+                            
+                            return (modulus, exponent)
+                        }
+                    }
                 }
             }
         }
@@ -870,7 +880,9 @@ private extension NSData {
         var offset = 0
         
         // ASN.1 Sequence
-        if bytes[offset++] == 0x30 {
+        if bytes[offset] == 0x30 {
+            offset += 1
+            
             // Skip over length
             let _ = NSInteger(octetBytes: bytes, startIdx: &offset)
             
@@ -882,18 +894,21 @@ private extension NSData {
                 offset += OID.count
                 
                 // Type
-                if bytes[offset++] != 0x03 {
+                if bytes[offset] != 0x03 {
                     return self
                 }
+                
+                offset += 1
                 
                 // Skip over the contents length field
                 let _ = NSInteger(octetBytes: bytes, startIdx: &offset)
                 
                 // Contents should be separated by a null from the header
-                if bytes[offset++] != 0x00 {
+                if bytes[offset] != 0x00 {
                     return self
                 }
                 
+                offset += 1
                 range.location += offset
                 range.length -= offset
             } else {
