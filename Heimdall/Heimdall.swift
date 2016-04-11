@@ -221,7 +221,7 @@ public class Heimdall {
                 
                 let keyIvBytes = UnsafePointer<UInt8>(rawKeyIVData.bytes)
                 
-                if SecKeyEncrypt(publicKey, .PKCS1, keyIvBytes, rawKeyIVData.length, &encryptedData, &encryptedLength) != noErr {
+                if SecKeyEncrypt(publicKey, .OAEP, keyIvBytes, rawKeyIVData.length, &encryptedData, &encryptedLength) != noErr {
                     return nil
                 }
                 
@@ -286,7 +286,7 @@ public class Heimdall {
                 let decryptedMetadataBytes = UnsafeMutablePointer<UInt8>(decryptedMetadata.mutableBytes)
                 
                 var decryptedMetadataLength = blockSize
-                let decryptionStatus = SecKeyDecrypt(key, .PKCS1, encryptedMetadata, metadata.length, decryptedMetadataBytes, &decryptedMetadataLength)
+                let decryptionStatus = SecKeyDecrypt(key, .OAEP, encryptedMetadata, metadata.length, decryptedMetadataBytes, &decryptedMetadataLength)
                 
                 if decryptionStatus == noErr {
                     decryptedMetadata.length = Int(decryptedMetadataLength)
