@@ -205,7 +205,19 @@ public class Heimdall {
             let algorithm = CCAlgorithm(kCCAlgorithmAES128)
             let blockSize = SecKeyGetBlockSize(publicKey)
             let ivSize = Heimdall.blockSize(algorithm)
-            let keySize = Heimdall.keySize(blockSize - ivSize)
+            let padding = SecPadding.OAEP
+            
+            let keySize: Int = {
+                let adjustedBlockSize = blockSize - ivSize - 42 // Assumes SHA1-OAEP is used
+                
+                if adjustedBlockSize >= Int(kCCKeySizeAES256) {
+                    return kCCKeySizeAES256
+                } else if adjustedBlockSize >= Int(kCCKeySizeAES192) {
+                    return kCCKeySizeAES192
+                } else {
+                    return kCCKeySizeAES128
+                }
+            }()
             
             if let aesKey = Heimdall.generateRandomBytes(keySize), iv = Heimdall.generateRandomBytes(ivSize),
                 encrypted = Heimdall.encrypt(data, key: aesKey, iv: iv, algorithm: algorithm) {
@@ -221,7 +233,8 @@ public class Heimdall {
                 
                 let keyIvBytes = UnsafePointer<UInt8>(rawKeyIVData.bytes)
                 
-                if SecKeyEncrypt(publicKey, .OAEP, keyIvBytes, rawKeyIVData.length, &encryptedData, &encryptedLength) != noErr {
+                let status = SecKeyEncrypt(publicKey, padding, keyIvBytes, rawKeyIVData.length, &encryptedData, &encryptedLength)
+                if status != noErr {
                     return nil
                 }
                 
@@ -271,11 +284,21 @@ public class Heimdall {
     public func decrypt(encryptedData: NSData) -> NSData? {
         if let key = obtainKey(.Private) {
             let algorithm = CCAlgorithm(kCCAlgorithmAES128)
-            
-            // First block contains the encrypted AES key and the IV
             let blockSize = SecKeyGetBlockSize(key)
             let ivSize = Heimdall.blockSize(algorithm)
-            let keySize = Heimdall.keySize(blockSize - ivSize)
+            let padding = SecPadding.OAEP
+            
+            let keySize: Int = {
+                let adjustedBlockSize = blockSize - ivSize - 42 // Assumes SHA1-OAEP is used
+                
+                if adjustedBlockSize >= Int(kCCKeySizeAES256) {
+                    return kCCKeySizeAES256
+                } else if adjustedBlockSize >= Int(kCCKeySizeAES192) {
+                    return kCCKeySizeAES192
+                } else {
+                    return kCCKeySizeAES128
+                }
+            }()
             
             let metadata = encryptedData.subdataWithRange(NSRange(location: 0, length: blockSize))
             let messageData = encryptedData.subdataWithRange(NSRange(location: blockSize, length: encryptedData.length - blockSize))
@@ -286,7 +309,7 @@ public class Heimdall {
                 let decryptedMetadataBytes = UnsafeMutablePointer<UInt8>(decryptedMetadata.mutableBytes)
                 
                 var decryptedMetadataLength = blockSize
-                let decryptionStatus = SecKeyDecrypt(key, .OAEP, encryptedMetadata, metadata.length, decryptedMetadataBytes, &decryptedMetadataLength)
+                let decryptionStatus = SecKeyDecrypt(key, padding, encryptedMetadata, blockSize, decryptedMetadataBytes, &decryptedMetadataLength)
                 
                 if decryptionStatus == noErr {
                     decryptedMetadata.length = Int(decryptedMetadataLength)
@@ -294,7 +317,7 @@ public class Heimdall {
                     // We can now extract the key and the IV
                     let decryptedKey = decryptedMetadata.subdataWithRange(NSRange(location: 0, length: keySize))
                     let decryptedIv = decryptedMetadata.subdataWithRange(NSRange(location: keySize, length: ivSize))
-                    
+
                     if let message = Heimdall.decrypt(messageData, key: decryptedKey, iv: decryptedIv, algorithm: algorithm) {
                         return message
                     }
@@ -641,16 +664,6 @@ public class Heimdall {
         return NSData(bytes: result, length: count)
     }
     
-    private class func keySize(blockSize: Int) -> Int {
-        if blockSize >= Int(kCCKeySizeAES256) {
-            return kCCKeySizeAES256
-        } else if blockSize >= Int(kCCKeySizeAES192) {
-            return kCCKeySizeAES192
-        } else {
-            return kCCKeySizeAES128
-        }
-    }
-    
     private class func blockSize(algorithm: CCAlgorithm) -> Int {
         switch Int(algorithm) {
         case kCCAlgorithmAES128, kCCAlgorithmAES:
@@ -687,7 +700,7 @@ public class Heimdall {
             
             let status = CCCrypt(CCOperation(kCCEncrypt), algorithm, CCOptions(kCCOptionPKCS7Padding), keyData, keyLength, ivData, dataBytes, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
             
-            if UInt32(status) == UInt32(kCCSuccess) {
+            if status == Int32(kCCSuccess) {
                 result.length = Int(encryptedLength)
                 return result
             }
