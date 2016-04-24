@@ -94,7 +94,7 @@ public class Heimdall {
     ///
     /// - parameters
     ///     - tagPrefix: Prefix to use for the private/public keys in Keychain
-    ///     - keySize: Size of the RSA key pair
+    ///     - keySize: Size of the RSA key pair (in bits)
     ///
     /// - returns: Heimdall instance that can handle both private and public key operations
     ///
@@ -109,7 +109,7 @@ public class Heimdall {
     /// - parameters:
     ///     - publicTag: Tag to use for the public key
     ///     - privateTag: Tag to use for the private key
-    ///     - keySize: Size of the RSA key pair
+    ///     - keySize: Size of the RSA key pair (in bits)
     ///
     /// - returns: Heimdall instance ready for both public and private key operations
     ///
@@ -202,33 +202,44 @@ public class Heimdall {
     ///
     public func encrypt(data: NSData) -> NSData? {
         if let publicKey = obtainKey(.Public) {
-            // Determine appropriate AES key size
+            let algorithm = CCAlgorithm(kCCAlgorithmAES128)
             let blockSize = SecKeyGetBlockSize(publicKey)
-            let keySize: Int
-            if blockSize >= 256 {
-                keySize = Int(kCCKeySizeAES256)
-            } else if blockSize >= 192 {
-                keySize = Int(kCCKeySizeAES192)
-            } else {
-                keySize = Int(kCCKeySizeAES128)
-            }
+            let ivSize = Heimdall.blockSize(algorithm)
+            let padding = SecPadding.OAEP
             
-            if let aesKey = Heimdall.generateSymmetricKey(keySize), encrypted = Heimdall.encrypt(data, key: aesKey, algorithm: CCAlgorithm(kCCAlgorithmAES128)) {
+            let keySize: Int = {
+                let adjustedBlockSize = blockSize - ivSize - 42 // Assumes SHA1-OAEP is used
+                
+                if adjustedBlockSize >= Int(kCCKeySizeAES256) {
+                    return kCCKeySizeAES256
+                } else if adjustedBlockSize >= Int(kCCKeySizeAES192) {
+                    return kCCKeySizeAES192
+                } else {
+                    return kCCKeySizeAES128
+                }
+            }()
+            
+            if let aesKey = Heimdall.generateRandomBytes(keySize), iv = Heimdall.generateRandomBytes(ivSize),
+                encrypted = Heimdall.encrypt(data, key: aesKey, iv: iv, algorithm: algorithm) {
                 // Final resulting data
                 let result = NSMutableData()
                 
-                // Encrypt the AES key with our public key
-                var encryptedData = [UInt8](count: Int(blockSize), repeatedValue: 0)
+                // Encrypt the AES key and IV with our public key
                 var encryptedLength = blockSize
-                let data = UnsafePointer<UInt8>(aesKey.bytes)
+                var encryptedData = [UInt8](count: encryptedLength, repeatedValue: 0)
                 
-                switch SecKeyEncrypt(publicKey, .PKCS1, data, Int(aesKey.length), &encryptedData, &encryptedLength) {
-                case noErr:
-                    result.appendBytes(&encryptedData, length: encryptedLength)
-                default:
+                let rawKeyIVData = NSMutableData(data: aesKey)
+                rawKeyIVData.appendData(iv)
+                
+                let keyIvBytes = UnsafePointer<UInt8>(rawKeyIVData.bytes)
+                
+                let status = SecKeyEncrypt(publicKey, padding, keyIvBytes, rawKeyIVData.length, &encryptedData, &encryptedLength)
+                if status != noErr {
                     return nil
                 }
                 
+                // Order is simple, first block is metadata, then comes the message
+                result.appendBytes(&encryptedData, length: encryptedLength)
                 result.appendData(encrypted)
                 
                 return result
@@ -272,24 +283,42 @@ public class Heimdall {
     ///
     public func decrypt(encryptedData: NSData) -> NSData? {
         if let key = obtainKey(.Private) {
-            // First block size should be the encrypted AES key
+            let algorithm = CCAlgorithm(kCCAlgorithmAES128)
             let blockSize = SecKeyGetBlockSize(key)
-            let keyData = encryptedData.subdataWithRange(NSRange(location: 0, length: blockSize))
+            let ivSize = Heimdall.blockSize(algorithm)
+            let padding = SecPadding.OAEP
+            
+            let keySize: Int = {
+                let adjustedBlockSize = blockSize - ivSize - 42 // Assumes SHA1-OAEP is used
+                
+                if adjustedBlockSize >= Int(kCCKeySizeAES256) {
+                    return kCCKeySizeAES256
+                } else if adjustedBlockSize >= Int(kCCKeySizeAES192) {
+                    return kCCKeySizeAES192
+                } else {
+                    return kCCKeySizeAES128
+                }
+            }()
+            
+            let metadata = encryptedData.subdataWithRange(NSRange(location: 0, length: blockSize))
             let messageData = encryptedData.subdataWithRange(NSRange(location: blockSize, length: encryptedData.length - blockSize))
             
-            // Decrypt the key
-            if let decryptedKey = NSMutableData(length: blockSize) {
-                let encryptedKeyData = UnsafePointer<UInt8>(keyData.bytes)
-                let decryptedKeyData = UnsafeMutablePointer<UInt8>(decryptedKey.mutableBytes)
-                var decryptedLength = blockSize
+            // Decrypt the key and the IV
+            if let decryptedMetadata = NSMutableData(length: blockSize) {
+                let encryptedMetadata = UnsafePointer<UInt8>(metadata.bytes)
+                let decryptedMetadataBytes = UnsafeMutablePointer<UInt8>(decryptedMetadata.mutableBytes)
                 
-                let keyStatus = SecKeyDecrypt(key, .PKCS1, encryptedKeyData, keyData.length, decryptedKeyData, &decryptedLength)
+                var decryptedMetadataLength = blockSize
+                let decryptionStatus = SecKeyDecrypt(key, padding, encryptedMetadata, blockSize, decryptedMetadataBytes, &decryptedMetadataLength)
                 
-                if keyStatus == noErr {
-                    decryptedKey.length = Int(decryptedLength)
+                if decryptionStatus == noErr {
+                    decryptedMetadata.length = Int(decryptedMetadataLength)
                     
-                    // Decrypt the message
-                    if let message = Heimdall.decrypt(messageData, key: decryptedKey, algorithm: CCAlgorithm(kCCAlgorithmAES128)) {
+                    // We can now extract the key and the IV
+                    let decryptedKey = decryptedMetadata.subdataWithRange(NSRange(location: 0, length: keySize))
+                    let decryptedIv = decryptedMetadata.subdataWithRange(NSRange(location: keySize, length: ivSize))
+
+                    if let message = Heimdall.decrypt(messageData, key: decryptedKey, iv: decryptedIv, algorithm: algorithm) {
                         return message
                     }
                 }
@@ -628,30 +657,50 @@ public class Heimdall {
         }
     }
     
-    private class func generateSymmetricKey(keySize: Int) -> NSData? {
-        var result = [UInt8](count: keySize, repeatedValue: 0)
-        SecRandomCopyBytes(kSecRandomDefault, keySize, &result)
+    private class func generateRandomBytes(count: Int) -> NSData? {
+        var result = [UInt8](count: count, repeatedValue: 0)
+        SecRandomCopyBytes(kSecRandomDefault, count, &result)
         
-        return NSData(bytes: result, length: keySize)
+        return NSData(bytes: result, length: count)
+    }
+    
+    private class func blockSize(algorithm: CCAlgorithm) -> Int {
+        switch Int(algorithm) {
+        case kCCAlgorithmAES128, kCCAlgorithmAES:
+            return kCCBlockSizeAES128
+        case kCCAlgorithmDES:
+            return kCCBlockSizeDES
+        case kCCAlgorithm3DES:
+            return kCCBlockSize3DES
+        case kCCAlgorithmCAST:
+            return kCCBlockSizeCAST
+        case kCCAlgorithmRC2:
+            return kCCBlockSizeRC2
+        case kCCAlgorithmBlowfish:
+            return kCCBlockSizeBlowfish
+        default:
+            return 0
+        }
     }
     
     
-    private class func encrypt(data: NSData, key: NSData, algorithm: CCAlgorithm) -> NSData? {
+    private class func encrypt(data: NSData, key: NSData, iv: NSData, algorithm: CCAlgorithm) -> NSData? {
         let dataBytes = UnsafePointer<UInt8>(data.bytes)
         let dataLength = data.length
         
-        if let result = NSMutableData(length: dataLength + key.length) {
+        if let result = NSMutableData(length: dataLength + key.length + iv.length) {
             let keyData = UnsafePointer<UInt8>(key.bytes)
             let keyLength = size_t(key.length)
+            let ivData = UnsafePointer<UInt8>(iv.bytes)
             
             let encryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
             let encryptedDataLength = size_t(result.length)
             
             var encryptedLength: size_t = 0
             
-            let status = CCCrypt(CCOperation(kCCEncrypt), algorithm, CCOptions(kCCOptionPKCS7Padding), keyData, keyLength, nil, dataBytes, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
+            let status = CCCrypt(CCOperation(kCCEncrypt), algorithm, CCOptions(kCCOptionPKCS7Padding), keyData, keyLength, ivData, dataBytes, dataLength, encryptedData, encryptedDataLength, &encryptedLength)
             
-            if UInt32(status) == UInt32(kCCSuccess) {
+            if status == Int32(kCCSuccess) {
                 result.length = Int(encryptedLength)
                 return result
             }
@@ -660,20 +709,21 @@ public class Heimdall {
         return nil
     }
     
-    private class func decrypt(data: NSData, key: NSData, algorithm: CCAlgorithm) -> NSData? {
+    private class func decrypt(data: NSData, key: NSData, iv: NSData, algorithm: CCAlgorithm) -> NSData? {
         let encryptedData = UnsafePointer<UInt8>(data.bytes)
         let encryptedDataLength = data.length
         
         if let result = NSMutableData(length: encryptedDataLength) {
             let keyData = UnsafePointer<UInt8>(key.bytes)
             let keyLength = size_t(key.length)
+            let ivData = UnsafePointer<UInt8>(iv.bytes)
             
             let decryptedData = UnsafeMutablePointer<UInt8>(result.mutableBytes)
             let decryptedDataLength = size_t(result.length)
             
             var decryptedLength: size_t = 0
             
-            let status = CCCrypt(CCOperation(kCCDecrypt), algorithm, CCOptions(kCCOptionPKCS7Padding), keyData, keyLength, nil, encryptedData, encryptedDataLength, decryptedData, decryptedDataLength, &decryptedLength)
+            let status = CCCrypt(CCOperation(kCCDecrypt), algorithm, CCOptions(kCCOptionPKCS7Padding), keyData, keyLength, ivData, encryptedData, encryptedDataLength, decryptedData, decryptedDataLength, &decryptedLength)
             
             if UInt32(status) == UInt32(kCCSuccess) {
                 result.length = Int(decryptedLength)

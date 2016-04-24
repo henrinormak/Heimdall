@@ -18,6 +18,8 @@ class HeimdallTests: XCTestCase {
     
     override func setUp() {
         self.privateHeimdall = Heimdall(tagPrefix: "com.hnormak.heimdall.private.tests", keySize: 2048)!
+        self.privateHeimdall.regenerate(2048) // Make sure that nothing leaks between tests
+
         self.publicHeimdall = Heimdall(publicTag: "com.hnormak.heimdall.tests", publicKeyData: self.privateHeimdall.publicKeyData()!)!
         
         self.destroyedPrivateHeimdall = Heimdall(tagPrefix: "com.hnormak.heimdall.private.destroyed.tests", keySize: 2048)!
