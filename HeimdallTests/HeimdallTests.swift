@@ -168,6 +168,8 @@ class HeimdallTests: XCTestCase {
         XCTAssertEqual(testData, decrypted!)
     }
     
+    // Generate a set of random strings, with exponential increase in length
+    // starting from 1 to 2^length
     func generatePerformanceTestData(length: Int = 10) -> [String] {
         func randomAlphaNumericString(length: Int) -> String {
             
@@ -186,9 +188,8 @@ class HeimdallTests: XCTestCase {
         
         // Generate a set of ten values that are encrypted and then
         // stored as a tuple (decrypted, encrypted)
-        let stringLength = 64
-        let strings = (0..<length).map { _ in
-            return randomAlphaNumericString(stringLength)
+        let strings = (0..<length).map { i in
+            return randomAlphaNumericString(Int(pow(2.0, Double(i))))
         }
         
         return strings
@@ -197,7 +198,7 @@ class HeimdallTests: XCTestCase {
     // Measure the performance of encrypting/decrypting 10 strings
     // and then make sure the results are expected
     func testEncryptionDecryptionPerformance() {
-        let testData = self.generatePerformanceTestData()
+        let testData = self.generatePerformanceTestData(15)
         var results = [(raw: String, encrypted: String?, decrypted: String?)]()
         
         // Measure performance of encrypting & decrypting 10 strings
