@@ -167,4 +167,57 @@ class HeimdallTests: XCTestCase {
         XCTAssertNotNil(decrypted)
         XCTAssertEqual(testData, decrypted!)
     }
+    
+    func generatePerformanceTestData(length: Int = 10) -> [String] {
+        func randomAlphaNumericString(length: Int) -> String {
+            
+            let allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+            let allowedCharsCount = UInt32(allowedChars.characters.count)
+            var randomString = ""
+            
+            for _ in (0..<length) {
+                let randomNum = Int(arc4random_uniform(allowedCharsCount))
+                let newCharacter = allowedChars[allowedChars.startIndex.advancedBy(randomNum)]
+                randomString += String(newCharacter)
+            }
+            
+            return randomString
+        }
+        
+        // Generate a set of ten values that are encrypted and then
+        // stored as a tuple (decrypted, encrypted)
+        let stringLength = 64
+        let strings = (0..<length).map { _ in
+            return randomAlphaNumericString(stringLength)
+        }
+        
+        return strings
+    }
+    
+    // Measure the performance of encrypting/decrypting 10 strings
+    // and then make sure the results are expected
+    func testEncryptionDecryptionPerformance() {
+        let testData = self.generatePerformanceTestData()
+        var results = [(raw: String, encrypted: String?, decrypted: String?)]()
+        
+        // Measure performance of encrypting & decrypting 10 strings
+        self.measureBlock { 
+            testData.forEach({ (string) in
+                if let encrypted = self.privateHeimdall.encrypt(string) {
+                    if let decrypted = self.privateHeimdall.decrypt(encrypted) {
+                        results.append((string, encrypted, decrypted))
+                    } else {
+                        XCTFail("Failed to decrypt message \(encrypted)")
+                    }
+                } else {
+                    XCTFail("Failed to encrypt message \(string)")
+                }
+            })
+        }
+        
+        // Validate the results
+        results.forEach { (tuple) in
+            XCTAssertEqual(tuple.raw, tuple.decrypted, "Failed to encrypt/decrypt message \(tuple.raw) -> \(tuple.encrypted) -> \(tuple.decrypted)")
+        }
+    }
 }
