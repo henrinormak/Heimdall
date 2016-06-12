@@ -195,13 +195,13 @@ class HeimdallTests: XCTestCase {
         return strings
     }
     
-    // Measure the performance of encrypting/decrypting 10 strings
+    // Measure the performance of encrypting/decrypting 15 strings
     // and then make sure the results are expected
     func testEncryptionDecryptionPerformance() {
         let testData = self.generatePerformanceTestData(15)
         var results = [(raw: String, encrypted: String?, decrypted: String?)]()
         
-        // Measure performance of encrypting & decrypting 10 strings
+        // Measure performance of encrypting & decrypting the strings
         self.measureBlock { 
             testData.forEach({ (string) in
                 if let encrypted = self.privateHeimdall.encrypt(string) {
