@@ -623,7 +623,7 @@ public class Heimdall {
         publicAttributes[String(kSecAttrApplicationTag)] = publicTag as CFStringRef
         publicAttributes[String(kSecValueData)] = data as CFDataRef
         publicAttributes[String(kSecReturnPersistentRef)] = true as CFBooleanRef
-      publicAttributes[String(kSecAttrAccessible)] = accessibility.accessibilityConstant as CFStringRef
+        publicAttributes[String(kSecAttrAccessible)] = accessibility.accessibilityConstant as CFStringRef
         
         var persistentRef: AnyObject?
         let status = SecItemAdd(publicAttributes, &persistentRef)
