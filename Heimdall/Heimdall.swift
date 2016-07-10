@@ -41,7 +41,8 @@ public class Heimdall {
     private let publicTag: String
     private var privateTag: String?
     private var scope: ScopeOptions
-    
+    private var accessibility: KeypairAccessibility
+  
     /// 
     /// Create an instance with data for the public key,
     /// the keychain is updated with the tag given (call .destroy() to remove)
@@ -53,24 +54,24 @@ public class Heimdall {
     ///
     /// - returns: Heimdall instance that can handle only public key operations
     ///
-    public convenience init?(publicTag: String, publicKeyData: NSData? = nil) {
+    public convenience init?(publicTag: String, publicKeyData: NSData? = nil, accessibility: KeypairAccessibility = .WhenUnlocked) {
         if let existingData = Heimdall.obtainKeyData(publicTag) {
             // Compare agains the new data (optional)
             if let newData = publicKeyData?.dataByStrippingX509Header() where !existingData.isEqualToData(newData) {
                 Heimdall.updateKey(publicTag, data: newData)
             }
-            
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
-        } else if let data = publicKeyData?.dataByStrippingX509Header(), _ = Heimdall.insertPublicKey(publicTag, data: data) {
+          
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
+        } else if let data = publicKeyData?.dataByStrippingX509Header(), _ = Heimdall.insertPublicKey(publicTag, accessibility: accessibility, data: data) {
             // Successfully created the new key
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
         } else {
             // Call the init, although returning nil
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
             return nil
         }
     }
-    
+  
     ///
     /// Create an instance with the modulus and exponent of the public key
     /// the resulting key is added to the keychain (call .destroy() to remove)
@@ -98,10 +99,10 @@ public class Heimdall {
     ///
     /// - returns: Heimdall instance that can handle both private and public key operations
     ///
-    public convenience init?(tagPrefix: String, keySize: Int = 2048) {
-        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize)
+    public convenience init?(tagPrefix: String, keySize: Int = 2048, accessibility: KeypairAccessibility = .WhenUnlocked) {
+        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize, accessibility: accessibility)
     }
-    
+  
     ///
     /// Create an instane with public and private key tags, if the key pair does not exist
     /// the keys will be generated
@@ -113,20 +114,22 @@ public class Heimdall {
     ///
     /// - returns: Heimdall instance ready for both public and private key operations
     ///
-    public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048) {
-        self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag)
-
+    public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048, accessibility: KeypairAccessibility = .WhenUnlocked) {
+        self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag, accessibility: accessibility)
+        
         if Heimdall.obtainKey(publicTag) == nil || Heimdall.obtainKey(privateTag) == nil {
-            if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize) == nil {
+            if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize, accessibility: accessibility) == nil {
                 return nil
             }
         }
     }
-    
-    private init(scope: ScopeOptions, publicTag: String, privateTag: String?) {
+  
+    private init(scope: ScopeOptions, publicTag: String, privateTag: String?, accessibility: KeypairAccessibility) {
         self.publicTag = publicTag
         self.privateTag = privateTag
         self.scope = scope
+        self.accessibility = accessibility
+      
     }
     
     //
@@ -488,7 +491,7 @@ public class Heimdall {
         }
         
         if let privateTag = self.privateTag where self.destroy() {
-            if Heimdall.generateKeyPair(self.publicTag, privateTag: privateTag, keySize: keySize) != nil {
+            if Heimdall.generateKeyPair(self.publicTag, privateTag: privateTag, keySize: keySize, accessibility: accessibility) != nil {
                 // Restore our scope back to .All
                 self.scope = .All
                 return true
@@ -613,13 +616,14 @@ public class Heimdall {
         return SecItemDelete(query) == noErr
     }
     
-    private class func insertPublicKey(publicTag: String, data: NSData) -> SecKeyRef? {
+    private class func insertPublicKey(publicTag: String, accessibility: KeypairAccessibility, data: NSData) -> SecKeyRef? {
         var publicAttributes = Dictionary<String, AnyObject>()
         publicAttributes[String(kSecAttrKeyType)] = kSecAttrKeyTypeRSA
         publicAttributes[String(kSecClass)] = kSecClassKey as CFStringRef
         publicAttributes[String(kSecAttrApplicationTag)] = publicTag as CFStringRef
         publicAttributes[String(kSecValueData)] = data as CFDataRef
         publicAttributes[String(kSecReturnPersistentRef)] = true as CFBooleanRef
+        publicAttributes[String(kSecAttrAccessible)] = accessibility.accessibilityConstant as CFStringRef
         
         var persistentRef: AnyObject?
         let status = SecItemAdd(publicAttributes, &persistentRef)
@@ -632,7 +636,7 @@ public class Heimdall {
     }
     
     
-    private class func generateKeyPair(publicTag: String, privateTag: String, keySize: Int) -> (publicKey: SecKeyRef, privateKey: SecKeyRef)? {
+    private class func generateKeyPair(publicTag: String, privateTag: String, keySize: Int, accessibility: KeypairAccessibility) -> (publicKey: SecKeyRef, privateKey: SecKeyRef)? {
         let privateAttributes = [String(kSecAttrIsPermanent): true,
                                  String(kSecAttrApplicationTag): privateTag]
         let publicAttributes = [String(kSecAttrIsPermanent): true,
@@ -641,7 +645,8 @@ public class Heimdall {
         let pairAttributes = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
                               String(kSecAttrKeySizeInBits): keySize,
                               String(kSecPublicKeyAttrs): publicAttributes,
-                              String(kSecPrivateKeyAttrs): privateAttributes]
+                              String(kSecPrivateKeyAttrs): privateAttributes,
+                              String(kSecAttrAccessible): accessibility.accessibilityConstant]
         
         var publicRef: SecKey?
         var privateRef: SecKey?
@@ -733,6 +738,39 @@ public class Heimdall {
 
         return nil
     }
+}
+
+///
+/// Keychain Accessibility Constants
+///
+
+public enum KeypairAccessibility {
+  case AfterFirstUnlock
+  case AfterFirstUnlockThisDeviceOnly
+  case Always
+  case AlwaysThisDeviceOnly
+  case WhenPasscodeSetThisDeviceOnly
+  case WhenUnlocked
+  case WhenUnlockedThisDeviceOnly
+  
+  private var accessibilityConstant: String {
+    switch self {
+    case .AfterFirstUnlock:
+      return String(kSecAttrAccessibleAfterFirstUnlock)
+    case .AfterFirstUnlockThisDeviceOnly:
+      return String(kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly)
+    case .Always:
+      return String(kSecAttrAccessibleAlways)
+    case .AlwaysThisDeviceOnly:
+      return String(kSecAttrAccessibleAlwaysThisDeviceOnly)
+    case .WhenPasscodeSetThisDeviceOnly:
+      return String(kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly)
+    case .WhenUnlocked:
+      return String(kSecAttrAccessibleWhenUnlocked)
+    case .WhenUnlockedThisDeviceOnly:
+      return String(kSecAttrAccessibleWhenUnlockedThisDeviceOnly)
+    }
+  }
 }
 
 ///
