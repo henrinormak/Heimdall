@@ -100,7 +100,7 @@ public class Heimdall {
     /// - returns: Heimdall instance that can handle both private and public key operations
     ///
     public convenience init?(tagPrefix: String, keySize: Int = 2048, accessibility: KeypairAccessibility = .WhenUnlocked) {
-        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize)
+        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize, accessibility: accessibility)
     }
   
     ///
