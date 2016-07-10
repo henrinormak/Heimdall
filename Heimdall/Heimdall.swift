@@ -55,21 +55,21 @@ public class Heimdall {
     /// - returns: Heimdall instance that can handle only public key operations
     ///
     public convenience init?(publicTag: String, publicKeyData: NSData? = nil, accessibility: KeypairAccessibility = .WhenUnlocked) {
-      if let existingData = Heimdall.obtainKeyData(publicTag) {
-        // Compare agains the new data (optional)
-        if let newData = publicKeyData?.dataByStrippingX509Header() where !existingData.isEqualToData(newData) {
-          Heimdall.updateKey(publicTag, data: newData)
+        if let existingData = Heimdall.obtainKeyData(publicTag) {
+            // Compare agains the new data (optional)
+            if let newData = publicKeyData?.dataByStrippingX509Header() where !existingData.isEqualToData(newData) {
+                Heimdall.updateKey(publicTag, data: newData)
+            }
+          
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
+        } else if let data = publicKeyData?.dataByStrippingX509Header(), _ = Heimdall.insertPublicKey(publicTag, accessibility: accessibility, data: data) {
+            // Successfully created the new key
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
+        } else {
+            // Call the init, although returning nil
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
+            return nil
         }
-      
-        self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
-      } else if let data = publicKeyData?.dataByStrippingX509Header(), _ = Heimdall.insertPublicKey(publicTag, accessibility: accessibility, data: data) {
-        // Successfully created the new key
-        self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
-      } else {
-        // Call the init, although returning nil
-        self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessibility: accessibility)
-        return nil
-      }
     }
   
     ///
