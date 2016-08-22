@@ -235,6 +235,7 @@ public class Heimdall {
                 
                 let status = SecKeyEncrypt(publicKey, padding, keyIvBytes, rawKeyIVData.length, &encryptedData, &encryptedLength)
                 if status != noErr {
+                    print("failed to encrypt data with error \(status)")
                     return nil
                 }
                 
@@ -321,6 +322,8 @@ public class Heimdall {
                     if let message = Heimdall.decrypt(messageData, key: decryptedKey, iv: decryptedIv, algorithm: algorithm) {
                         return message
                     }
+                } else {
+                    print("failed to decrypt data with error \(decryptionStatus)")
                 }
             }
         }
@@ -383,6 +386,8 @@ public class Heimdall {
                     // Create Base64 string of the result
                     result.length = encryptedDataLength
                     return result
+                } else {
+                    print("failed to sign with error \(status)")
                 }
             }
         }
@@ -439,6 +444,7 @@ public class Heimdall {
             case noErr:
                 return true
             default:
+                print("failed to verify with error \(result)")
                 return false
             }
         }
@@ -568,6 +574,7 @@ public class Heimdall {
                 return (ref as! SecKeyRef)
             }
         default:
+            print("failed to obtain key with error \(status)")
             break
         }
         
@@ -585,10 +592,13 @@ public class Heimdall {
         
         let result: NSData?
         
-        switch SecItemCopyMatching(query, &keyRef) {
+        let status = SecItemCopyMatching(query, &keyRef)
+        
+        switch status {
         case noErr:
             result = keyRef as? NSData
         default:
+            print("failed to obtain key data with error \(status)")
             result = nil
         }
         
@@ -601,7 +611,14 @@ public class Heimdall {
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef]
         
-        return SecItemUpdate(query, [String(kSecValueData): data]) == noErr
+        let status = SecItemUpdate(query, [String(kSecValueData): data])
+        
+        if (status != noErr) {
+            print("failed to update key with error \(status)")
+            return false
+        } else {
+            return true
+        }
     }
     
     private class func deleteKey(tag: String) -> Bool {
@@ -610,7 +627,14 @@ public class Heimdall {
             String(kSecClass): kSecClassKey as CFStringRef,
             String(kSecAttrApplicationTag): tag as CFStringRef]
         
-        return SecItemDelete(query) == noErr
+        let status = SecItemDelete(query)
+        
+        if (status != noErr) {
+            print("failed to delete key with error \(status)")
+            return false
+        } else {
+            return true
+        }
     }
     
     private class func insertPublicKey(publicTag: String, data: NSData) -> SecKeyRef? {
@@ -625,6 +649,7 @@ public class Heimdall {
         let status = SecItemAdd(publicAttributes, &persistentRef)
         
         if status != noErr && status != errSecDuplicateItem {
+            print("failed to insert public key with error \(status)")
             return nil
         }
         
@@ -645,7 +670,8 @@ public class Heimdall {
         
         var publicRef: SecKey?
         var privateRef: SecKey?
-        switch SecKeyGeneratePair(pairAttributes, &publicRef, &privateRef) {
+        let status = SecKeyGeneratePair(pairAttributes, &publicRef, &privateRef)
+        switch status {
             case noErr:
                 if let publicKey = publicRef, privateKey = privateRef {
                     return (publicKey, privateKey)
@@ -653,6 +679,7 @@ public class Heimdall {
                 
                 return nil
             default:
+                print("failed to generate key pair with error \(status)")
                 return nil
         }
     }
