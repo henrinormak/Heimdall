@@ -47,27 +47,27 @@ class HeimdallTests: XCTestCase {
         customisedTags?.destroy()
         
         // Public key data based initialisation
-        let publicKeyData = NSData(base64EncodedString: "MIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: [])!
+        let publicKeyData = Data(base64Encoded: "MIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: [])!
         let pubData = Heimdall(publicTag: "public.initialisation", publicKeyData: publicKeyData)
         XCTAssertNotNil(pubData)
         pubData?.destroy()
         
         // Public key components based initialisation
-        let pubKeyModulus = NSData(base64EncodedString: "ANg3YOIwixO1T8Sz4wWkzx9w0l6ZCUD9yeSsnGQVBeHcliU3mPJuR8k60Y/g5ubd3HKTyUnfjo7qR3VI/gbS/vIPjTnXZlAq9IJkLMbF8fHsfpUvsB4EQZh/wm/+ZWdTJezprcrM/Bv6cOixmCvQtLNGaFDgAKb/6wvb0NU/EtHiTySAfKx7H5768ZAvQsJH7buaTiL+X6q47Ay6p9HS8qVsk/AIR0nYEWZ9OufHn08j8rX57tv9V4js8wmzcTxMb/p/H6tZJM0iIPfoDe7bz8/oKW79XkLA5AK6xsfN/BKlvKOXFGxgNw7ZRlgK+HSk3t8mONAgOeQDM/5b5lNHZ0c=", options: [])!
-        let pubKeyExponent = NSData(base64EncodedString: "AQAB", options: [])!
+        let pubKeyModulus = Data(base64Encoded: "ANg3YOIwixO1T8Sz4wWkzx9w0l6ZCUD9yeSsnGQVBeHcliU3mPJuR8k60Y/g5ubd3HKTyUnfjo7qR3VI/gbS/vIPjTnXZlAq9IJkLMbF8fHsfpUvsB4EQZh/wm/+ZWdTJezprcrM/Bv6cOixmCvQtLNGaFDgAKb/6wvb0NU/EtHiTySAfKx7H5768ZAvQsJH7buaTiL+X6q47Ay6p9HS8qVsk/AIR0nYEWZ9OufHn08j8rX57tv9V4js8wmzcTxMb/p/H6tZJM0iIPfoDe7bz8/oKW79XkLA5AK6xsfN/BKlvKOXFGxgNw7ZRlgK+HSk3t8mONAgOeQDM/5b5lNHZ0c=", options: [])!
+        let pubKeyExponent = Data(base64Encoded: "AQAB", options: [])!
         
         let pubComponents = Heimdall(publicTag: "public.components.initialisation", publicKeyModulus: pubKeyModulus, publicKeyExponent: pubKeyExponent)
         XCTAssertNotNil(pubComponents)
         pubComponents?.destroy()
         
         // Non-null starting modulus
-        let alternativePubKeyModulus = NSData(base64EncodedString: "3JvrTKthRgmLnmugBwN3z3MCh9WiDIv+GX0rm181taXimmz/ZKP8kfuaZL4eLnqCejCM8CEKhX+2tJRpIrht360Sx7gBii5TUibumfMxTEZb/+1aGZCA/a/JjZUOrvGABDYqqn5FdZ7RFgrUtQsnpM7is0UXtV86omPw9Fh8HwU=", options: [])!
+        let alternativePubKeyModulus = Data(base64Encoded: "3JvrTKthRgmLnmugBwN3z3MCh9WiDIv+GX0rm181taXimmz/ZKP8kfuaZL4eLnqCejCM8CEKhX+2tJRpIrht360Sx7gBii5TUibumfMxTEZb/+1aGZCA/a/JjZUOrvGABDYqqn5FdZ7RFgrUtQsnpM7is0UXtV86omPw9Fh8HwU=", options: [])!
         let pubAlternativeComponents = Heimdall(publicTag: "public.components.alternative.initialisation", publicKeyModulus: alternativePubKeyModulus, publicKeyExponent: pubKeyExponent)
         XCTAssertNotNil(pubAlternativeComponents)
         pubAlternativeComponents?.destroy()
         
         // Public X.509 data based initialisation
-        let publicKeyX509 = NSData(base64EncodedString: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: [])!
+        let publicKeyX509 = Data(base64Encoded: "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2Ddg4jCLE7VPxLPjBaTPH3DSXpkJQP3J5KycZBUF4dyWJTeY8m5HyTrRj+Dm5t3ccpPJSd+OjupHdUj+BtL+8g+NOddmUCr0gmQsxsXx8ex+lS+wHgRBmH/Cb/5lZ1Ml7Omtysz8G/pw6LGYK9C0s0ZoUOAApv/rC9vQ1T8S0eJPJIB8rHsfnvrxkC9Cwkftu5pOIv5fqrjsDLqn0dLypWyT8AhHSdgRZn0658efTyPytfnu2/1XiOzzCbNxPExv+n8fq1kkzSIg9+gN7tvPz+gpbv1eQsDkArrGx838EqW8o5cUbGA3DtlGWAr4dKTe3yY40CA55AMz/lvmU0dnRwIDAQAB", options: [])!
         
         let pubX509 = Heimdall(publicTag: "public.x509.initialisation", publicKeyData: publicKeyX509)
         XCTAssertNotNil(pubX509)
@@ -92,7 +92,7 @@ class HeimdallTests: XCTestCase {
     }
     
     func testSigning() {
-        let testData = "This is a test string".dataUsingEncoding(NSUTF8StringEncoding)!
+        let testData = "This is a test string".data(using: String.Encoding.utf8)!
         
         // Test signing with an instance that should have the means to do so (private key based instance)
         XCTAssertNotNil(self.privateHeimdall.sign(testData))
@@ -112,8 +112,8 @@ class HeimdallTests: XCTestCase {
     
     func testVerifying() {
         // Verification should work with both private and public heimdalls
-        let testData = "This is a test string".dataUsingEncoding(NSUTF8StringEncoding)!
-        let corruptedData = "This is a test injected string".dataUsingEncoding(NSUTF8StringEncoding)!
+        let testData = "This is a test string".data(using: String.Encoding.utf8)!
+        let corruptedData = "This is a test injected string".data(using: String.Encoding.utf8)!
         let testSignature = self.privateHeimdall.sign(testData)!
         
         // Valid signature test
@@ -133,7 +133,7 @@ class HeimdallTests: XCTestCase {
     
     func testEncrypting() {
         // Encryption should work with both private and public Heimdalls
-        let testData = "This is a test string".dataUsingEncoding(NSUTF8StringEncoding)!
+        let testData = "This is a test string".data(using: String.Encoding.utf8)!
         
         XCTAssertNotNil(self.privateHeimdall.encrypt(testData))
         XCTAssertNotNil(self.publicHeimdall.encrypt(testData))
@@ -151,7 +151,7 @@ class HeimdallTests: XCTestCase {
     
     func testDecrypting() {
         // Decrypting should only work with a private Heimdall
-        let testData = "This is a test string".dataUsingEncoding(NSUTF8StringEncoding)!
+        let testData = "This is a test string".data(using: String.Encoding.utf8)!
         
         // Encrypted by the same instance
         var encrypted = self.privateHeimdall.encrypt(testData)
@@ -170,8 +170,8 @@ class HeimdallTests: XCTestCase {
     
     // Generate a set of random strings, with exponential increase in length
     // starting from 1 to 2^length
-    func generatePerformanceTestData(length: Int = 10) -> [String] {
-        func randomAlphaNumericString(length: Int) -> String {
+    func generatePerformanceTestData(_ length: Int = 10) -> [String] {
+        func randomAlphaNumericString(_ length: Int) -> String {
             
             let allowedChars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
             let allowedCharsCount = UInt32(allowedChars.characters.count)
@@ -179,7 +179,7 @@ class HeimdallTests: XCTestCase {
             
             for _ in (0..<length) {
                 let randomNum = Int(arc4random_uniform(allowedCharsCount))
-                let newCharacter = allowedChars[allowedChars.startIndex.advancedBy(randomNum)]
+                let newCharacter = allowedChars[allowedChars.characters.index(allowedChars.startIndex, offsetBy: randomNum)]
                 randomString += String(newCharacter)
             }
             
@@ -202,7 +202,7 @@ class HeimdallTests: XCTestCase {
         var results = [(raw: String, encrypted: String?, decrypted: String?)]()
         
         // Measure performance of encrypting & decrypting the strings
-        self.measureBlock { 
+        self.measure { 
             testData.forEach({ (string) in
                 if let encrypted = self.privateHeimdall.encrypt(string) {
                     if let decrypted = self.privateHeimdall.decrypt(encrypted) {
