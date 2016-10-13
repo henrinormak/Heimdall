@@ -1,7 +1,7 @@
 Pod::Spec.new do |s|
 
   s.name        = "Heimdall"
-  s.version     = "1.0.0"
+  s.version     = "1.1.0"
   s.summary     = "Heimdall is a wrapper around the Security framework for simple encryption/decryption operations."
   s.license     = { :type => "MIT", :file => "LICENSE" }
 
