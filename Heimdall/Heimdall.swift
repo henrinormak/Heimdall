@@ -460,7 +460,7 @@ open class Heimdall {
     ///
     /// - returns: True if remove successfully
     ///
-    open func destroy() -> Bool {
+    @discardableResult open func destroy() -> Bool {
         if Heimdall.deleteKey(self.publicTag) {
             self.scope = self.scope & ~(ScopeOptions.PublicKey)
             
@@ -486,7 +486,7 @@ open class Heimdall {
     ///
     /// - returns: True if reset successfully
     ///
-    open func regenerate(_ keySize: Int = 2048) -> Bool {
+    @discardableResult open func regenerate(_ keySize: Int = 2048) -> Bool {
         // Only if we currently have a private key in our control (or we think we have one)
         if self.scope & ScopeOptions.PrivateKey != ScopeOptions.PrivateKey {
             return false
