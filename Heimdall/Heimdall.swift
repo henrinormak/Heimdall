@@ -57,7 +57,10 @@ open class Heimdall {
         if let existingData = Heimdall.obtainKeyData(publicTag) {
             // Compare agains the new data (optional)
             if let newData = publicKeyData?.dataByStrippingX509Header() , (existingData != newData) {
-                Heimdall.updateKey(publicTag, data: newData)
+                if !Heimdall.updateKey(publicTag, data: newData) {
+                    // Failed to update the key, fail the initialisation
+                    return nil
+                }
             }
             
             self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
@@ -460,7 +463,7 @@ open class Heimdall {
     ///
     /// - returns: True if remove successfully
     ///
-    open func destroy() -> Bool {
+    @discardableResult open func destroy() -> Bool {
         if Heimdall.deleteKey(self.publicTag) {
             self.scope = self.scope & ~(ScopeOptions.PublicKey)
             
@@ -486,7 +489,7 @@ open class Heimdall {
     ///
     /// - returns: True if reset successfully
     ///
-    open func regenerate(_ keySize: Int = 2048) -> Bool {
+    @discardableResult open func regenerate(_ keySize: Int = 2048) -> Bool {
         // Only if we currently have a private key in our control (or we think we have one)
         if self.scope & ScopeOptions.PrivateKey != ScopeOptions.PrivateKey {
             return false
@@ -665,7 +668,10 @@ open class Heimdall {
     
     fileprivate class func generateRandomBytes(_ count: Int) -> Data? {
         var result = [UInt8](repeating: 0, count: count)
-        SecRandomCopyBytes(kSecRandomDefault, count, &result)
+        if SecRandomCopyBytes(kSecRandomDefault, count, &result) != 0 {
+            // Failed to get random bits
+            return nil
+        }
         
         return Data(bytes: UnsafePointer<UInt8>(result), count: count)
     }
