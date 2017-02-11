@@ -495,7 +495,7 @@ open class Heimdall {
     ///
     /// - returns: True if reset successfully
     ///
-    @discardableResult open func regenerate(keySize: Int = 2048, access: KeypairAccess = .WhenUnlocked) -> Bool {
+    @discardableResult open func regenerate(_ keySize: Int = 2048, access: KeypairAccess = .WhenUnlocked) -> Bool {
         // Only if we currently have a private key in our control (or we think we have one)
         if self.scope & ScopeOptions.PrivateKey != ScopeOptions.PrivateKey {
             return false
