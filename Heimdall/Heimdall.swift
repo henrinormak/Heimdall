@@ -296,6 +296,8 @@ open class Heimdall {
             let ivSize = Heimdall.blockSize(algorithm)
             let padding = SecPadding.OAEP
             
+            guard encryptedData.count > blockSize else { return nil }
+            
             let keySize: Int = {
                 let adjustedBlockSize = blockSize - ivSize - 42 // Assumes SHA1-OAEP is used
                 
@@ -309,7 +311,7 @@ open class Heimdall {
             }()
             
             let metadata = encryptedData.subdata(in: Range(uncheckedBounds: (0, blockSize)))
-            let messageData = encryptedData.subdata(in: Range(uncheckedBounds: (blockSize, blockSize + encryptedData.count - blockSize)))
+            let messageData = encryptedData.subdata(in: Range(uncheckedBounds: (blockSize, encryptedData.count)))
                         
             // Decrypt the key and the IV
             if let decryptedMetadata = NSMutableData(length: blockSize) {
