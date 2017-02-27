@@ -296,6 +296,8 @@ open class Heimdall {
             let ivSize = Heimdall.blockSize(algorithm)
             let padding = SecPadding.OAEP
             
+            guard encryptedData.count > blockSize else { return nil }
+            
             let keySize: Int = {
                 let adjustedBlockSize = blockSize - ivSize - 42 // Assumes SHA1-OAEP is used
                 
