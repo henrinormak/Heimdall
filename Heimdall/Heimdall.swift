@@ -311,7 +311,7 @@ open class Heimdall {
             }()
             
             let metadata = encryptedData.subdata(in: Range(uncheckedBounds: (0, blockSize)))
-            let messageData = encryptedData.subdata(in: Range(uncheckedBounds: (blockSize, blockSize + encryptedData.count - blockSize)))
+            let messageData = encryptedData.subdata(in: Range(uncheckedBounds: (blockSize, encryptedData.count)))
                         
             // Decrypt the key and the IV
             if let decryptedMetadata = NSMutableData(length: blockSize) {
