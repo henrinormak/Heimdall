@@ -344,7 +344,7 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "mapsDirectory=$SRCROOT/CommonCrypto\nplatform=$PLATFORM_NAME\nmoduleMap=$mapsDirectory/$platform.modulemap\nmoduleMapComparison=$mapsDirectory/$platform.modulemap.tmp\nsdkRoot=$(cd -P \"$SDKROOT\" && pwd)\n\nmkdir -p \"$mapsDirectory\"\n\ncat > \"$moduleMapComparison\" << MAP\nmodule CommonCrypto [system] {\n    header \"$sdkRoot/usr/include/CommonCrypto/CommonCrypto.h\"\n    export *\n}\nMAP\n\ndiff \"$moduleMapComparison\" \"$moduleMap\" >/dev/null 2>/dev/null\nif [[ $? != 0 ]] ; then\nmv \"$moduleMapComparison\" \"$moduleMap\"\nelse\nrm \"$moduleMapComparison\"\nfi";
+			shellScript = "mapsDirectory=$SRCROOT/CommonCrypto\nplatform=$PLATFORM_NAME\nmoduleMap=$mapsDirectory/$platform.modulemap\nmoduleMapComparison=$mapsDirectory/$platform.modulemap.tmp\nsdkRoot=$(cd -P \"$SDKROOT\" && pwd)\n\n/bin/mkdir -p \"$mapsDirectory\"\n\n/bin/cat > \"$moduleMapComparison\" << MAP\nmodule CommonCrypto [system] {\n    header \"$sdkRoot/usr/include/CommonCrypto/CommonCrypto.h\"\n    export *\n}\nMAP\n\n/usr/bin/diff \"$moduleMapComparison\" \"$moduleMap\" >/dev/null 2>/dev/null\nif [[ $? != 0 ]] ; then\n/bin/mv \"$moduleMapComparison\" \"$moduleMap\"\nelse\n/bin/rm \"$moduleMapComparison\"\nfi";
 		};
 /* End PBXShellScriptBuildPhase section */
 
