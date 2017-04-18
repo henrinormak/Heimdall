@@ -6,12 +6,12 @@ Pod::Spec.new do |s|
   s.license     = { :type => "MIT", :file => "LICENSE" }
 
   s.description = <<-DESC
-                   Heimdall acts as a gatekeeper between UI and the underlying Security frameworks, offering
-                   tools for encryption/decryption, as well as signing/verifying.
+    Heimdall acts as a gatekeeper between UI and the underlying Security frameworks, offering
+    tools for encryption/decryption, as well as signing/verifying.
 
-                   Heimdall supports both using a RSA public-private key-pair, as well as just a public key,
-                   which allows for multiple parties to verify and encrypt messages for sending.
-                   DESC
+    Heimdall supports both using a RSA public-private key-pair, as well as just a public key,
+    which allows for multiple parties to verify and encrypt messages for sending.
+  DESC
 
   s.homepage    = "https://github.com/henrinormak/Heimdall"
 
@@ -22,24 +22,37 @@ Pod::Spec.new do |s|
 
   s.source       = { :git => "https://github.com/henrinormak/Heimdall.git", :tag => s.version.to_s }
 
-  s.preserve_paths  = "CommonCrypto/*"
+
+  #
+  # Create the dummy CommonCrypto.framework structures
+  #
+  s.prepare_command = <<-CMD
+    touch prepare_command.txt
+    echo 'Running prepare_command'
+    pwd
+    echo Running GenerateCommonCryptoModule
+    swift ./GenerateCommonCryptoModule.swift macosx .
+    swift ./GenerateCommonCryptoModule.swift iphonesimulator .
+    swift ./GenerateCommonCryptoModule.swift iphoneos .
+    swift ./GenerateCommonCryptoModule.swift appletvsimulator .
+    swift ./GenerateCommonCryptoModule.swift appletvos .
+    swift ./GenerateCommonCryptoModule.swift watchsimulator .
+    swift ./GenerateCommonCryptoModule.swift watchos .
+
+  CMD
+
+  # Stop CocoaPods from deleting dummy frameworks
+  s.preserve_paths  = "Frameworks"
+
   s.source_files    = "Heimdall/*"
   s.requires_arc    = true
 
-  s.xcconfig        = { 'SWIFT_INCLUDE_PATHS[sdk=iphonesimulator*]' => '$(PODS_ROOT)/Heimdall/CommonCrypto/iphonesimulator/',
-                        'SWIFT_INCLUDE_PATHS[sdk=iphoneos*]' => '$(PODS_ROOT)/Heimdall/CommonCrypto/iphoneos/',
-                        'SWIFT_INCLUDE_PATHS[sdk=appletvos*]' => '$(PODS_ROOT)/Heimdall/CommonCrypto/appletvos/',
-                        'SWIFT_INCLUDE_PATHS[sdk=appletvsimulator*]' => '$(PODS_ROOT)/Heimdall/CommonCrypto/appletvsimulator/' }
 
-  s.prepare_command = <<-CMD
-                        mkdir -p CommonCrypto/iphoneos
-                        mkdir -p CommonCrypto/iphonesimulator
-                        mkdir -p CommonCrypto/appletvos
-                        mkdir -p CommonCrypto/appletvsimulator
-                        cp CommonCrypto/iphoneos.modulemap CommonCrypto/iphoneos/module.modulemap
-                        cp CommonCrypto/iphonesimulator.modulemap CommonCrypto/iphonesimulator/module.modulemap
-                        cp CommonCrypto/iphonesimulator.modulemap CommonCrypto/appletvos/module.modulemap
-                        cp CommonCrypto/iphonesimulator.modulemap CommonCrypto/appletvsimulator/module.modulemap
-                        CMD
+  # Make sure we can find the dummy frameworks
+  s.xcconfig = { 
+    "SWIFT_VERSION" => "3.0",
+    "SWIFT_INCLUDE_PATHS" => "${PODS_ROOT}/Heimdall/Frameworks/$(PLATFORM_NAME)",
+    "FRAMEWORK_SEARCH_PATHS" => "${PODS_ROOT}/Heimdall/Frameworks/$(PLATFORM_NAME)"
+  }
 
 end
