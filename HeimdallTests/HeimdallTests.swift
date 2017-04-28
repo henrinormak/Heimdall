@@ -218,7 +218,7 @@ class HeimdallTests: XCTestCase {
         
         // Validate the results
         results.forEach { (tuple) in
-            XCTAssertEqual(tuple.raw, tuple.decrypted, "Failed to encrypt/decrypt message \(tuple.raw) -> \(tuple.encrypted) -> \(tuple.decrypted)")
+            XCTAssertEqual(tuple.raw, tuple.decrypted, "Failed to encrypt/decrypt message \(tuple.raw) -> \(tuple.encrypted ?? "nil") -> \(tuple.decrypted ?? "nil")")
         }
     }
 }

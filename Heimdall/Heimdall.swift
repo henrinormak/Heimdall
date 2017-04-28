@@ -275,7 +275,7 @@ open class Heimdall {
         }
         
         if let data = Data(base64Encoded: string, options: NSData.Base64DecodingOptions(rawValue: 0)), let decryptedData = self.decrypt(data) {
-            return NSString(data: decryptedData, encoding: String.Encoding.utf8.rawValue) as? String
+            return NSString(data: decryptedData, encoding: String.Encoding.utf8.rawValue) as String?
         }
         
         return nil
