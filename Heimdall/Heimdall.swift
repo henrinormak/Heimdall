@@ -776,7 +776,7 @@ private extension NSInteger {
         }
         
         // Long form
-        let i = (self / 256) + 1
+        let i = Int(log2(Double(self)) / 8 + 1)
         var len = self
         var result: [CUnsignedChar] = [CUnsignedChar(i + 0x80)]
         
