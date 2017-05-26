@@ -23,7 +23,7 @@ Heimdall requires Swift 3 and works with only Xcode 8 and above
 Heimdall is available as a CocoaPod, simply add the following line to your Podfile
 
 ```ruby
-pod 'Heimdall', '~> 1.0.0'
+pod 'Heimdall', '~> 1.1.0'
 ```
 
 Also, make sure your podfile includes the following line, which is necessary to support Swift frameworks
