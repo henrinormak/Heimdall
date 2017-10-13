@@ -40,6 +40,7 @@ import CommonCrypto
 open class Heimdall {
     fileprivate let publicTag: String
     fileprivate var privateTag: String?
+    fileprivate var accessGroup: String?
     fileprivate var scope: ScopeOptions
     
     /// 
@@ -53,23 +54,23 @@ open class Heimdall {
     ///
     /// - returns: Heimdall instance that can handle only public key operations
     ///
-    public convenience init?(publicTag: String, publicKeyData: Data? = nil) {
-        if let existingData = Heimdall.obtainKeyData(publicTag) {
+    public convenience init?(publicTag: String, publicKeyData: Data? = nil, accessGroup: String? = nil) {
+        if let existingData = Heimdall.obtainKeyData(publicTag, accessGroup: accessGroup) {
             // Compare agains the new data (optional)
             if let newData = publicKeyData?.dataByStrippingX509Header() , (existingData != newData) {
-                if !Heimdall.updateKey(publicTag, data: newData) {
+                if !Heimdall.updateKey(publicTag, data: newData, accessGroup: accessGroup) {
                     // Failed to update the key, fail the initialisation
                     return nil
                 }
             }
             
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
-        } else if let data = publicKeyData?.dataByStrippingX509Header(), let _ = Heimdall.insertPublicKey(publicTag, data: data) {
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessGroup: accessGroup)
+        } else if let data = publicKeyData?.dataByStrippingX509Header(), let _ = Heimdall.insertPublicKey(publicTag, data: data, accessGroup: accessGroup) {
             // Successfully created the new key
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessGroup: accessGroup)
         } else {
             // Call the init, although returning nil
-            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
+            self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil, accessGroup: accessGroup)
             return nil
         }
     }
@@ -85,10 +86,10 @@ open class Heimdall {
     ///
     /// - returns: Heimdall instance that can handle only public key operations
     ///
-    public convenience init?(publicTag: String, publicKeyModulus: Data, publicKeyExponent: Data) {
+    public convenience init?(publicTag: String, publicKeyModulus: Data, publicKeyExponent: Data, accessGroup: String? = nil) {
         // Combine the data into one that we can use for initialisation
         let combinedData = Data(modulus: publicKeyModulus, exponent: publicKeyExponent)
-        self.init(publicTag: publicTag, publicKeyData: combinedData)
+        self.init(publicTag: publicTag, publicKeyData: combinedData, accessGroup: accessGroup)
     }
     
     ///
@@ -101,8 +102,8 @@ open class Heimdall {
     ///
     /// - returns: Heimdall instance that can handle both private and public key operations
     ///
-    public convenience init?(tagPrefix: String, keySize: Int = 2048) {
-        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize)
+    public convenience init?(tagPrefix: String, keySize: Int = 2048, accessGroup: String? = nil) {
+        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize, accessGroup: accessGroup)
     }
     
     ///
@@ -116,20 +117,21 @@ open class Heimdall {
     ///
     /// - returns: Heimdall instance ready for both public and private key operations
     ///
-    public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048) {
-        self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag)
+    public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048, accessGroup: String? = nil) {
+        self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag, accessGroup: accessGroup)
 
-        if Heimdall.obtainKey(publicTag) == nil || Heimdall.obtainKey(privateTag) == nil {
-            if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize) == nil {
+        if Heimdall.obtainKey(publicTag, accessGroup: accessGroup) == nil || Heimdall.obtainKey(privateTag, accessGroup: accessGroup) == nil {
+            if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize, accessGroup: accessGroup) == nil {
                 return nil
             }
         }
     }
     
-    fileprivate init(scope: ScopeOptions, publicTag: String, privateTag: String?) {
+    fileprivate init(scope: ScopeOptions, publicTag: String, privateTag: String?, accessGroup: String? = nil) {
         self.publicTag = publicTag
         self.privateTag = privateTag
         self.scope = scope
+        self.accessGroup = accessGroup
     }
     
     //
@@ -466,10 +468,10 @@ open class Heimdall {
     /// - returns: True if remove successfully
     ///
     @discardableResult open func destroy() -> Bool {
-        if Heimdall.deleteKey(self.publicTag) {
+        if Heimdall.deleteKey(self.publicTag, accessGroup: self.accessGroup) {
             self.scope = self.scope & ~(ScopeOptions.PublicKey)
             
-            if let privateTag = self.privateTag , Heimdall.deleteKey(privateTag) {
+            if let privateTag = self.privateTag , Heimdall.deleteKey(privateTag, accessGroup: self.accessGroup) {
                 self.scope = self.scope & ~(ScopeOptions.PrivateKey)
                 return true
             }
@@ -498,7 +500,7 @@ open class Heimdall {
         }
         
         if let privateTag = self.privateTag , self.destroy() {
-            if Heimdall.generateKeyPair(self.publicTag, privateTag: privateTag, keySize: keySize) != nil {
+            if Heimdall.generateKeyPair(self.publicTag, privateTag: privateTag, keySize: keySize, accessGroup: self.accessGroup) != nil {
                 // Restore our scope back to .All
                 self.scope = .All
                 return true
@@ -539,9 +541,9 @@ open class Heimdall {
     //
     fileprivate func obtainKey(_ key: KeyType) -> SecKey? {
         if key == .public && self.scope & ScopeOptions.PublicKey == ScopeOptions.PublicKey {
-            return Heimdall.obtainKey(self.publicTag)
+            return Heimdall.obtainKey(self.publicTag, accessGroup: self.accessGroup)
         } else if let tag = self.privateTag , key == .private && self.scope & ScopeOptions.PrivateKey == ScopeOptions.PrivateKey {
-            return Heimdall.obtainKey(tag)
+            return Heimdall.obtainKey(tag, accessGroup: self.accessGroup)
         }
         
         return nil
@@ -549,9 +551,9 @@ open class Heimdall {
     
     fileprivate func obtainKeyData(_ key: KeyType) -> Data? {
         if key == .public && self.scope & ScopeOptions.PublicKey == ScopeOptions.PublicKey {
-            return Heimdall.obtainKeyData(self.publicTag)
+            return Heimdall.obtainKeyData(self.publicTag, accessGroup: self.accessGroup)
         } else if let tag = self.privateTag , key == .private && self.scope & ScopeOptions.PrivateKey == ScopeOptions.PrivateKey {
-            return Heimdall.obtainKeyData(tag)
+            return Heimdall.obtainKeyData(tag, accessGroup: self.accessGroup)
         }
         
         return nil
@@ -561,14 +563,18 @@ open class Heimdall {
     //  MARK: Private class functions
     //
     
-    fileprivate class func obtainKey(_ tag: String) -> SecKey? {
+    fileprivate class func obtainKey(_ tag: String, accessGroup: String?) -> SecKey? {
         var keyRef: AnyObject?
-        let query: Dictionary<String, AnyObject> = [
+        var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecReturnRef): kCFBooleanTrue as CFBoolean,
             String(kSecClass): kSecClassKey as CFString,
             String(kSecAttrApplicationTag): tag as CFString,
-        ]
+            ]
+        
+        if let accessGroup = accessGroup {
+            query[String(kSecAttrAccessGroup)] = accessGroup as CFString
+        }
         
         let status = SecItemCopyMatching(query as CFDictionary, &keyRef)
         
@@ -584,14 +590,18 @@ open class Heimdall {
         return nil
     }
     
-    fileprivate class func obtainKeyData(_ tag: String) -> Data? {
+    fileprivate class func obtainKeyData(_ tag: String, accessGroup: String?) -> Data? {
         var keyRef: AnyObject?
-        let query: Dictionary<String, AnyObject> = [
+        var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecReturnData): kCFBooleanTrue as CFBoolean,
             String(kSecClass): kSecClassKey as CFString,
             String(kSecAttrApplicationTag): tag as CFString,
         ]
+        
+        if let accessGroup = accessGroup {
+            query[String(kSecAttrAccessGroup)] = accessGroup as CFString
+        }
         
         let result: Data?
         
@@ -605,32 +615,43 @@ open class Heimdall {
         return result
     }
     
-    fileprivate class func updateKey(_ tag: String, data: Data) -> Bool {
-        let query: Dictionary<String, AnyObject> = [
+    fileprivate class func updateKey(_ tag: String, data: Data, accessGroup: String?) -> Bool {
+        var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecClass): kSecClassKey as CFString,
             String(kSecAttrApplicationTag): tag as CFString]
         
+        if let accessGroup = accessGroup {
+            query[String(kSecAttrAccessGroup)] = accessGroup as CFString
+        }
         
         return SecItemUpdate(query as CFDictionary, [String(kSecValueData): data] as CFDictionary) == noErr
     }
     
-    fileprivate class func deleteKey(_ tag: String) -> Bool {
-        let query: Dictionary<String, AnyObject> = [
+    fileprivate class func deleteKey(_ tag: String, accessGroup: String?) -> Bool {
+        var query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecClass): kSecClassKey as CFString,
             String(kSecAttrApplicationTag): tag as CFString]
         
+        if let accessGroup = accessGroup {
+            query[String(kSecAttrAccessGroup)] = accessGroup as CFString
+        }
+        
         return SecItemDelete(query as CFDictionary) == noErr
     }
     
-    fileprivate class func insertPublicKey(_ publicTag: String, data: Data) -> SecKey? {
+    fileprivate class func insertPublicKey(_ publicTag: String, data: Data, accessGroup: String?) -> SecKey? {
         var publicAttributes = Dictionary<String, AnyObject>()
         publicAttributes[String(kSecAttrKeyType)] = kSecAttrKeyTypeRSA
         publicAttributes[String(kSecClass)] = kSecClassKey as CFString
         publicAttributes[String(kSecAttrApplicationTag)] = publicTag as CFString
         publicAttributes[String(kSecValueData)] = data as CFData
         publicAttributes[String(kSecReturnPersistentRef)] = true as CFBoolean
+        
+        if let accessGroup = accessGroup {
+            publicAttributes[String(kSecAttrAccessGroup)] = accessGroup as CFString
+        }
         
         var persistentRef: AnyObject?
         let status = SecItemAdd(publicAttributes as CFDictionary, &persistentRef)
@@ -639,15 +660,20 @@ open class Heimdall {
             return nil
         }
         
-        return Heimdall.obtainKey(publicTag)
+        return Heimdall.obtainKey(publicTag, accessGroup: accessGroup)
     }
     
     
-    fileprivate class func generateKeyPair(_ publicTag: String, privateTag: String, keySize: Int) -> (publicKey: SecKey, privateKey: SecKey)? {
-        let privateAttributes = [String(kSecAttrIsPermanent): true,
+    fileprivate class func generateKeyPair(_ publicTag: String, privateTag: String, keySize: Int, accessGroup: String?) -> (publicKey: SecKey, privateKey: SecKey)? {
+        var privateAttributes = [String(kSecAttrIsPermanent): true,
                                  String(kSecAttrApplicationTag): privateTag] as [String : Any]
-        let publicAttributes = [String(kSecAttrIsPermanent): true,
+        var publicAttributes = [String(kSecAttrIsPermanent): true,
                                 String(kSecAttrApplicationTag): publicTag] as [String : Any]
+        
+        if let accessGroup = accessGroup {
+            privateAttributes[String(kSecAttrAccessGroup)] = accessGroup as CFString
+            publicAttributes[String(kSecAttrAccessGroup)] = accessGroup as CFString
+        }
         
         let pairAttributes = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
                               String(kSecAttrKeySizeInBits): keySize,
