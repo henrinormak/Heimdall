@@ -1,4 +1,4 @@
-module CommonCrypto [system] {
+module HeimdallCommonCrypto [system] {
     header "/Applications/Xcode.app/Contents/Developer/Platforms/AppleTVSimulator.platform/Developer/SDKs/AppleTVSimulator.sdk/usr/include/CommonCrypto/CommonCrypto.h"
     export *
 }
