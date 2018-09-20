@@ -886,14 +886,14 @@ private extension Data {
             if keyBytes[i] == 0x02 {
                 i += 1
                 if let modulusLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
-                    let modulus = self.subdata(in: NSRange(location: i, length: modulusLength).toRange()!)
+                    let modulus = self.subdata(in: Range.init(NSRange(location: i, length: modulusLength))!)
                     i += modulusLength
                     
                     // Second should be the exponent
                     if keyBytes[i] == 0x02 {
                         i += 1
                         if let exponentLength = NSInteger(octetBytes: keyBytes, startIdx: &i) {
-                            let exponent = self.subdata(in: NSRange(location: i, length: exponentLength).toRange()!)
+                            let exponent = self.subdata(in: Range.init(NSRange(location: i, length: exponentLength))!)
                             i += exponentLength
                             
                             return (modulus, exponent)
@@ -981,7 +981,7 @@ private extension Data {
             }
         }
         
-        return self.subdata(in: range.toRange()!)
+        return self.subdata(in: Range.init(range)!)
     }
 }
 
