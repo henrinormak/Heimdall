@@ -14,14 +14,15 @@ Pod::Spec.new do |s|
                    DESC
 
   s.homepage    = "https://github.com/henrinormak/Heimdall"
+  s.source          = { :git => "https://github.com/henrinormak/Heimdall.git", :tag => s.version.to_s }
 
   s.author              = { "Henri Normak" => "henri.normak@gmail.com" }
   s.social_media_url    = "http://twitter.com/henrinormak"
 
-  s.platform     = :ios, "8.0"
+  s.ios.deployment_target   = "8.0"
+  s.tvos.deployment_target  = "9.0"
 
-  s.source       = { :git => "https://github.com/henrinormak/Heimdall.git", :tag => s.version.to_s }
-
+  s.swift_version   = "4.2"
   s.source_files    = "Heimdall/*"
   s.requires_arc    = true
 
