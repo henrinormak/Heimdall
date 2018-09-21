@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!--
+   entitlements.plist
+   Heimdall
+
+   Created by Henri Normak on 21/09/2018.
+   Copyright (c) 2018 Henri Normak. All rights reserved.
+-->
+<plist version="1.0">
+    <dict>
+        <key>get-task-allow</key>
+        <true/>
+    </dict>
+</plist>
+ 
