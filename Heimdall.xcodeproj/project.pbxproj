@@ -9,6 +9,12 @@
 /* Begin PBXBuildFile section */
 		59B002691BE2D2840020EF3D /* Heimdall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E866C991AE8FCD6005682A2 /* Heimdall.swift */; };
 		59B002FF1BE2D7580020EF3D /* Heimdall.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E866C591AE8FBEC005682A2 /* Heimdall.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		8E2237BB2154B33A00F277B1 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2237BA2154B33A00F277B1 /* AppDelegate.swift */; };
+		8E2237BD2154B33A00F277B1 /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E2237BC2154B33A00F277B1 /* ViewController.swift */; };
+		8E2237C02154B33A00F277B1 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8E2237BE2154B33A00F277B1 /* Main.storyboard */; };
+		8E2237C22154B33D00F277B1 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 8E2237C12154B33D00F277B1 /* Assets.xcassets */; };
+		8E2237C52154B33D00F277B1 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 8E2237C32154B33D00F277B1 /* LaunchScreen.storyboard */; };
+		8E2237CB2154B37E00F277B1 /* entitlements.plist in Resources */ = {isa = PBXBuildFile; fileRef = 8E2237CA2154B37E00F277B1 /* entitlements.plist */; };
 		8E866C5A1AE8FBEC005682A2 /* Heimdall.h in Headers */ = {isa = PBXBuildFile; fileRef = 8E866C591AE8FBEC005682A2 /* Heimdall.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		8E866C671AE8FBEC005682A2 /* HeimdallTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E866C661AE8FBEC005682A2 /* HeimdallTests.swift */; };
 		8E866C9A1AE8FCD6005682A2 /* Heimdall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E866C991AE8FCD6005682A2 /* Heimdall.swift */; };
@@ -16,6 +22,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		8E2237CC2154B3B500F277B1 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 8E866C4B1AE8FBEC005682A2 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 8E2237B72154B33900F277B1;
+			remoteInfo = TestsHost;
+		};
 		8E866C611AE8FBEC005682A2 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 8E866C4B1AE8FBEC005682A2 /* Project object */;
@@ -27,6 +40,14 @@
 
 /* Begin PBXFileReference section */
 		59B0020E1BE2D1410020EF3D /* Heimdall.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Heimdall.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E2237B82154B33900F277B1 /* TestsHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestsHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		8E2237BA2154B33A00F277B1 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
+		8E2237BC2154B33A00F277B1 /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		8E2237BF2154B33A00F277B1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
+		8E2237C12154B33D00F277B1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		8E2237C42154B33D00F277B1 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		8E2237C62154B33D00F277B1 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		8E2237CA2154B37E00F277B1 /* entitlements.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = entitlements.plist; sourceTree = "<group>"; };
 		8E866C541AE8FBEC005682A2 /* Heimdall.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Heimdall.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		8E866C581AE8FBEC005682A2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		8E866C591AE8FBEC005682A2 /* Heimdall.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Heimdall.h; sourceTree = "<group>"; };
@@ -38,6 +59,13 @@
 
 /* Begin PBXFrameworksBuildPhase section */
 		59B0020A1BE2D1410020EF3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E2237B52154B33900F277B1 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -62,11 +90,26 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8E2237B92154B33A00F277B1 /* TestsHost */ = {
+			isa = PBXGroup;
+			children = (
+				8E2237BA2154B33A00F277B1 /* AppDelegate.swift */,
+				8E2237BC2154B33A00F277B1 /* ViewController.swift */,
+				8E2237BE2154B33A00F277B1 /* Main.storyboard */,
+				8E2237C12154B33D00F277B1 /* Assets.xcassets */,
+				8E2237C32154B33D00F277B1 /* LaunchScreen.storyboard */,
+				8E2237C62154B33D00F277B1 /* Info.plist */,
+				8E2237CA2154B37E00F277B1 /* entitlements.plist */,
+			);
+			path = TestsHost;
+			sourceTree = "<group>";
+		};
 		8E866C4A1AE8FBEC005682A2 = {
 			isa = PBXGroup;
 			children = (
 				8E866C561AE8FBEC005682A2 /* Heimdall */,
 				8E866C631AE8FBEC005682A2 /* HeimdallTests */,
+				8E2237B92154B33A00F277B1 /* TestsHost */,
 				8E866C551AE8FBEC005682A2 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -77,6 +120,7 @@
 				8E866C541AE8FBEC005682A2 /* Heimdall.framework */,
 				8E866C5F1AE8FBEC005682A2 /* HeimdallTests.xctest */,
 				59B0020E1BE2D1410020EF3D /* Heimdall.framework */,
+				8E2237B82154B33900F277B1 /* TestsHost.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -156,6 +200,23 @@
 			productReference = 59B0020E1BE2D1410020EF3D /* Heimdall.framework */;
 			productType = "com.apple.product-type.framework";
 		};
+		8E2237B72154B33900F277B1 /* TestsHost */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 8E2237C92154B33D00F277B1 /* Build configuration list for PBXNativeTarget "TestsHost" */;
+			buildPhases = (
+				8E2237B42154B33900F277B1 /* Sources */,
+				8E2237B52154B33900F277B1 /* Frameworks */,
+				8E2237B62154B33900F277B1 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TestsHost;
+			productName = TestsHost;
+			productReference = 8E2237B82154B33900F277B1 /* TestsHost.app */;
+			productType = "com.apple.product-type.application";
+		};
 		8E866C531AE8FBEC005682A2 /* Heimdall */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 8E866C6A1AE8FBEC005682A2 /* Build configuration list for PBXNativeTarget "Heimdall" */;
@@ -186,6 +247,7 @@
 			);
 			dependencies = (
 				8E866C621AE8FBEC005682A2 /* PBXTargetDependency */,
+				8E2237CD2154B3B500F277B1 /* PBXTargetDependency */,
 			);
 			name = HeimdallTests;
 			productName = HeimdallTests;
@@ -198,13 +260,18 @@
 		8E866C4B1AE8FBEC005682A2 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0700;
+				LastSwiftUpdateCheck = 1000;
 				LastUpgradeCheck = 1000;
 				ORGANIZATIONNAME = "Henri Normak";
 				TargetAttributes = {
 					59B0020D1BE2D1410020EF3D = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = M95U3P5YY5;
+					};
+					8E2237B72154B33900F277B1 = {
+						CreatedOnToolsVersion = 10.0;
+						DevelopmentTeam = M95U3P5YY5;
+						ProvisioningStyle = Automatic;
 					};
 					8E866C531AE8FBEC005682A2 = {
 						CreatedOnToolsVersion = 6.3;
@@ -215,6 +282,7 @@
 						CreatedOnToolsVersion = 6.3;
 						DevelopmentTeam = M95U3P5YY5;
 						LastSwiftMigration = 1000;
+						TestTargetID = 8E2237B72154B33900F277B1;
 					};
 				};
 			};
@@ -224,6 +292,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				Base,
 			);
 			mainGroup = 8E866C4A1AE8FBEC005682A2;
 			productRefGroup = 8E866C551AE8FBEC005682A2 /* Products */;
@@ -233,6 +302,7 @@
 				8E866C531AE8FBEC005682A2 /* Heimdall */,
 				59B0020D1BE2D1410020EF3D /* Heimdall-TVOS */,
 				8E866C5E1AE8FBEC005682A2 /* HeimdallTests */,
+				8E2237B72154B33900F277B1 /* TestsHost */,
 			);
 		};
 /* End PBXProject section */
@@ -242,6 +312,17 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8E2237B62154B33900F277B1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E2237CB2154B37E00F277B1 /* entitlements.plist in Resources */,
+				8E2237C52154B33D00F277B1 /* LaunchScreen.storyboard in Resources */,
+				8E2237C22154B33D00F277B1 /* Assets.xcassets in Resources */,
+				8E2237C02154B33A00F277B1 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -270,6 +351,15 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8E2237B42154B33900F277B1 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				8E2237BD2154B33A00F277B1 /* ViewController.swift in Sources */,
+				8E2237BB2154B33A00F277B1 /* AppDelegate.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		8E866C4F1AE8FBEC005682A2 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -289,12 +379,36 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
+		8E2237CD2154B3B500F277B1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 8E2237B72154B33900F277B1 /* TestsHost */;
+			targetProxy = 8E2237CC2154B3B500F277B1 /* PBXContainerItemProxy */;
+		};
 		8E866C621AE8FBEC005682A2 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 8E866C531AE8FBEC005682A2 /* Heimdall */;
 			targetProxy = 8E866C611AE8FBEC005682A2 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		8E2237BE2154B33A00F277B1 /* Main.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8E2237BF2154B33A00F277B1 /* Base */,
+			);
+			name = Main.storyboard;
+			sourceTree = "<group>";
+		};
+		8E2237C32154B33D00F277B1 /* LaunchScreen.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				8E2237C42154B33D00F277B1 /* Base */,
+			);
+			name = LaunchScreen.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		59B002131BE2D1410020EF3D /* Debug */ = {
@@ -339,6 +453,57 @@
 				SKIP_INSTALL = YES;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
+			};
+			name = Release;
+		};
+		8E2237C72154B33D00F277B1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = M95U3P5YY5;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = TestsHost/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hnormak.TestsHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		8E2237C82154B33D00F277B1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = M95U3P5YY5;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				INFOPLIST_FILE = TestsHost/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
+				MTL_FAST_MATH = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.hnormak.TestsHost;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.2;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};
@@ -533,6 +698,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestsHost.app/TestsHost";
 			};
 			name = Debug;
 		};
@@ -549,6 +715,7 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.2;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestsHost.app/TestsHost";
 			};
 			name = Release;
 		};
@@ -560,6 +727,15 @@
 			buildConfigurations = (
 				59B002131BE2D1410020EF3D /* Debug */,
 				59B002141BE2D1410020EF3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		8E2237C92154B33D00F277B1 /* Build configuration list for PBXNativeTarget "TestsHost" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				8E2237C72154B33D00F277B1 /* Debug */,
+				8E2237C82154B33D00F277B1 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
