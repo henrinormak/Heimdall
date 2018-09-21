@@ -267,6 +267,7 @@
 					59B0020D1BE2D1410020EF3D = {
 						CreatedOnToolsVersion = 7.1;
 						DevelopmentTeam = M95U3P5YY5;
+						LastSwiftMigration = 1000;
 					};
 					8E2237B72154B33900F277B1 = {
 						CreatedOnToolsVersion = 10.0;
@@ -429,6 +430,7 @@
 				PRODUCT_NAME = Heimdall;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -451,6 +453,7 @@
 				PRODUCT_NAME = Heimdall;
 				SDKROOT = appletvos;
 				SKIP_INSTALL = YES;
+				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = 3;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -649,7 +652,6 @@
 				PRODUCT_NAME = Heimdall;
 				SKIP_INSTALL = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.2;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
@@ -675,7 +677,6 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.hnormak.$(PRODUCT_NAME:rfc1034identifier)";
 				PRODUCT_NAME = Heimdall;
 				SKIP_INSTALL = YES;
-				SWIFT_SWIFT3_OBJC_INFERENCE = Off;
 				SWIFT_VERSION = 4.2;
 				TVOS_DEPLOYMENT_TARGET = 9.0;
 			};
