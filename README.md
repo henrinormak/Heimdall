@@ -58,33 +58,6 @@ Finally, make sure Heimdall is listed under the **Embedded Binaries** section in
 
 Although not recommended, you can also add Heimdall directly, by including `Heimdall.swift` in your project.
 
-As Heimdall uses `CommonCrypto`, you also need to include a build phase for the following script, which needs to occur before compilation of `Heimdall.swift`
-
-```bash
-modulesDirectory=$DERIVED_FILES_DIR/modules
-modulesMap=$modulesDirectory/module.modulemap
-modulesMapTemp=$modulesDirectory/module.modulemap.tmp
-
-mkdir -p "$modulesDirectory"
-
-cat > "$modulesMapTemp" << MAP
-module CommonCrypto [system] {
-    header "$SDKROOT/usr/include/CommonCrypto/CommonCrypto.h"
-    export *
-}
-MAP
-
-diff "$modulesMapTemp" "$modulesMap" >/dev/null 2>/dev/null
-if [[ $? != 0 ]] ; then
-    mv "$modulesMapTemp" "$modulesMap"
-else
-    rm "$modulesMapTemp"
-fi
-```
-
-In addition, the add the following path (`$(DERIVED_DATA_DIR)/modules`) to the **Include Paths** (SWIFT_INCLUDE_PATHS) build setting
-
-
 ## Usage
 
 Using Heimdall is simple, for public-private key-pair, you just have to create an instance, which can be used for encryption/decryption, signing/verifying.
