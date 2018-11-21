@@ -37,12 +37,13 @@ import Foundation
 import Security
 import CommonCrypto
 
+
 open class Heimdall {
     fileprivate let publicTag: String
     fileprivate var privateTag: String?
     fileprivate var scope: ScopeOptions
-    
-    /// 
+
+    ///
     /// Create an instance with data for the public key,
     /// the keychain is updated with the tag given (call .destroy() to remove)
     ///
@@ -50,21 +51,22 @@ open class Heimdall {
     ///     - publicTag: Tag of the public key, keychain is checked for existing key (updated if data
     /// provided is non-nil and does not match)
     ///     - publicKeyData: Bits of the public key, can include the X509 header (will be stripped)
+    ///     - access: When the underlying key pair can be read from the device's Keychain
     ///
     /// - returns: Heimdall instance that can handle only public key operations
     ///
-    public convenience init?(publicTag: String, publicKeyData: Data? = nil) {
+    public convenience init?(publicTag: String, publicKeyData: Data? = nil, access: KeypairAccess = .WhenUnlocked) {
         if let existingData = Heimdall.obtainKeyData(publicTag) {
-            // Compare agains the new data (optional)
+            // Compare against the new data (optional)
             if let newData = publicKeyData?.dataByStrippingX509Header() , (existingData != newData) {
-                if !Heimdall.updateKey(publicTag, data: newData) {
+                if !Heimdall.updateKey(publicTag, data: newData, access: access) {
                     // Failed to update the key, fail the initialisation
                     return nil
                 }
             }
-            
+
             self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
-        } else if let data = publicKeyData?.dataByStrippingX509Header(), let _ = Heimdall.insertPublicKey(publicTag, data: data) {
+        } else if let data = publicKeyData?.dataByStrippingX509Header(), let _ = Heimdall.insertPublicKey(publicTag, data: data, access: access) {
             // Successfully created the new key
             self.init(scope: ScopeOptions.PublicKey, publicTag: publicTag, privateTag: nil)
         } else {
@@ -73,7 +75,7 @@ open class Heimdall {
             return nil
         }
     }
-    
+  
     ///
     /// Create an instance with the modulus and exponent of the public key
     /// the resulting key is added to the keychain (call .destroy() to remove)
@@ -82,13 +84,14 @@ open class Heimdall {
     ///     - publicTag: Tag of the public key, see data based initialiser for details
     ///     - publicKeyModulus: Modulus of the public key
     ///     - publicKeyExponent: Exponent of the public key
+    ///     - access: When the underlying key pair can be read from the device's Keychain
     ///
     /// - returns: Heimdall instance that can handle only public key operations
     ///
-    public convenience init?(publicTag: String, publicKeyModulus: Data, publicKeyExponent: Data) {
+    public convenience init?(publicTag: String, publicKeyModulus: Data, publicKeyExponent: Data, access: KeypairAccess = .WhenUnlocked) {
         // Combine the data into one that we can use for initialisation
         let combinedData = Data(modulus: publicKeyModulus, exponent: publicKeyExponent)
-        self.init(publicTag: publicTag, publicKeyData: combinedData)
+        self.init(publicTag: publicTag, publicKeyData: combinedData, access: access)
     }
     
     ///
@@ -98,13 +101,14 @@ open class Heimdall {
     /// - parameters
     ///     - tagPrefix: Prefix to use for the private/public keys in Keychain
     ///     - keySize: Size of the RSA key pair (in bits)
+    ///     - access: When the underlying key pair can be read from the device's Keychain
     ///
     /// - returns: Heimdall instance that can handle both private and public key operations
     ///
-    public convenience init?(tagPrefix: String, keySize: Int = 2048) {
-        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize)
+    public convenience init?(tagPrefix: String, keySize: Int = 2048, access: KeypairAccess = .WhenUnlocked) {
+        self.init(publicTag: tagPrefix, privateTag: tagPrefix + ".private", keySize: keySize, access: access)
     }
-    
+  
     ///
     /// Create an instane with public and private key tags, if the key pair does not exist
     /// the keys will be generated
@@ -113,19 +117,20 @@ open class Heimdall {
     ///     - publicTag: Tag to use for the public key
     ///     - privateTag: Tag to use for the private key
     ///     - keySize: Size of the RSA key pair (in bits)
+    ///     - access: When the underlying key pair can be read from the device's Keychain
     ///
     /// - returns: Heimdall instance ready for both public and private key operations
     ///
-    public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048) {
+    public convenience init?(publicTag: String, privateTag: String, keySize: Int = 2048, access: KeypairAccess = .WhenUnlocked) {
         self.init(scope: ScopeOptions.All, publicTag: publicTag, privateTag: privateTag)
-
+        
         if Heimdall.obtainKey(publicTag) == nil || Heimdall.obtainKey(privateTag) == nil {
-            if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize) == nil {
+            if Heimdall.generateKeyPair(publicTag, privateTag: privateTag, keySize: keySize, access: access) == nil {
                 return nil
             }
         }
     }
-    
+
     fileprivate init(scope: ScopeOptions, publicTag: String, privateTag: String?) {
         self.publicTag = publicTag
         self.privateTag = privateTag
@@ -488,17 +493,18 @@ open class Heimdall {
     ///
     /// - parameters:
     ///     - keySize: Size of keys in the new pair
+    ///     - access: When the underlying key pair can be read from the device's Keychain
     ///
     /// - returns: True if reset successfully
     ///
-    @discardableResult open func regenerate(_ keySize: Int = 2048) -> Bool {
+    @discardableResult open func regenerate(_ keySize: Int = 2048, access: KeypairAccess = .WhenUnlocked) -> Bool {
         // Only if we currently have a private key in our control (or we think we have one)
         if self.scope & ScopeOptions.PrivateKey != ScopeOptions.PrivateKey {
             return false
         }
         
-        if let privateTag = self.privateTag , self.destroy() {
-            if Heimdall.generateKeyPair(self.publicTag, privateTag: privateTag, keySize: keySize) != nil {
+        if let privateTag = self.privateTag, self.destroy() {
+            if Heimdall.generateKeyPair(self.publicTag, privateTag: privateTag, keySize: keySize, access: access) != nil {
                 // Restore our scope back to .All
                 self.scope = .All
                 return true
@@ -605,14 +611,27 @@ open class Heimdall {
         return result
     }
     
-    fileprivate class func updateKey(_ tag: String, data: Data) -> Bool {
+    fileprivate class func updateKey(_ tag: String, data: Data? = nil, access: KeypairAccess? = nil) -> Bool {
         let query: Dictionary<String, AnyObject> = [
             String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
             String(kSecClass): kSecClassKey as CFString,
             String(kSecAttrApplicationTag): tag as CFString]
         
+        guard data != nil || access != nil else {
+            return true
+        }
         
-        return SecItemUpdate(query as CFDictionary, [String(kSecValueData): data] as CFDictionary) == noErr
+        var update = Dictionary<String, Any>()
+        
+        if let data = data {
+            update[String(kSecValueData)] = data
+        }
+        
+        if let access = access {
+            update[String(kSecAttrAccessible)] = access.securityConstant as CFString
+        }
+        
+        return SecItemUpdate(query as CFDictionary, update as CFDictionary) == noErr
     }
     
     fileprivate class func deleteKey(_ tag: String) -> Bool {
@@ -624,14 +643,15 @@ open class Heimdall {
         return SecItemDelete(query as CFDictionary) == noErr
     }
     
-    fileprivate class func insertPublicKey(_ publicTag: String, data: Data) -> SecKey? {
+    fileprivate class func insertPublicKey(_ publicTag: String, data: Data, access: KeypairAccess) -> SecKey? {
         var publicAttributes = Dictionary<String, AnyObject>()
         publicAttributes[String(kSecAttrKeyType)] = kSecAttrKeyTypeRSA
         publicAttributes[String(kSecClass)] = kSecClassKey as CFString
         publicAttributes[String(kSecAttrApplicationTag)] = publicTag as CFString
         publicAttributes[String(kSecValueData)] = data as CFData
         publicAttributes[String(kSecReturnPersistentRef)] = true as CFBoolean
-        
+        publicAttributes[String(kSecAttrAccessible)] = access.securityConstant as CFString
+    
         var persistentRef: AnyObject?
         let status = SecItemAdd(publicAttributes as CFDictionary, &persistentRef)
         
@@ -642,8 +662,7 @@ open class Heimdall {
         return Heimdall.obtainKey(publicTag)
     }
     
-    
-    fileprivate class func generateKeyPair(_ publicTag: String, privateTag: String, keySize: Int) -> (publicKey: SecKey, privateKey: SecKey)? {
+    fileprivate class func generateKeyPair(_ publicTag: String, privateTag: String, keySize: Int, access: KeypairAccess) -> (publicKey: SecKey, privateKey: SecKey)? {
         let privateAttributes = [String(kSecAttrIsPermanent): true,
                                  String(kSecAttrApplicationTag): privateTag] as [String : Any]
         let publicAttributes = [String(kSecAttrIsPermanent): true,
@@ -652,7 +671,8 @@ open class Heimdall {
         let pairAttributes = [String(kSecAttrKeyType): kSecAttrKeyTypeRSA,
                               String(kSecAttrKeySizeInBits): keySize,
                               String(kSecPublicKeyAttrs): publicAttributes,
-                              String(kSecPrivateKeyAttrs): privateAttributes] as [String : Any]
+                              String(kSecPrivateKeyAttrs): privateAttributes,
+                              String(kSecAttrAccessible): access.securityConstant] as [String : Any]
         
         var publicRef: SecKey?
         var privateRef: SecKey?
@@ -746,6 +766,39 @@ open class Heimdall {
         }
 
         return nil
+    }
+}
+
+///
+/// Keychain Access Constants
+///
+
+public enum KeypairAccess {
+    case AfterFirstUnlock
+    case AfterFirstUnlockThisDeviceOnly
+    case Always
+    case AlwaysThisDeviceOnly
+    case WhenPasscodeSetThisDeviceOnly
+    case WhenUnlocked
+    case WhenUnlockedThisDeviceOnly
+    
+    fileprivate var securityConstant: String {
+        switch self {
+        case .AfterFirstUnlock:
+            return String(kSecAttrAccessibleAfterFirstUnlock)
+        case .AfterFirstUnlockThisDeviceOnly:
+            return String(kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly)
+        case .Always:
+            return String(kSecAttrAccessibleAlways)
+        case .AlwaysThisDeviceOnly:
+            return String(kSecAttrAccessibleAlwaysThisDeviceOnly)
+        case .WhenPasscodeSetThisDeviceOnly:
+            return String(kSecAttrAccessibleWhenPasscodeSetThisDeviceOnly)
+        case .WhenUnlocked:
+            return String(kSecAttrAccessibleWhenUnlocked)
+        case .WhenUnlockedThisDeviceOnly:
+            return String(kSecAttrAccessibleWhenUnlockedThisDeviceOnly)
+        }
     }
 }
 
