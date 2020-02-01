@@ -92,43 +92,59 @@ class HeimdallTests: XCTestCase {
     }
     
     func testSigning() {
+        testSigning(.sha1)
+        testSigning(.sha224)
+        testSigning(.sha256)
+        testSigning(.sha384)
+        testSigning(.sha512)
+    }
+    
+    func testSigning(_ hash: HashAlgorithm) {
         let testData = "This is a test string".data(using: String.Encoding.utf8)!
         
         // Test signing with an instance that should have the means to do so (private key based instance)
-        XCTAssertNotNil(self.privateHeimdall.sign(testData))
+        XCTAssertNotNil(self.privateHeimdall.sign(testData, algorithm: hash))
         
         // Signing should fail for an instance which is created based on a public key
-        XCTAssertNil(self.publicHeimdall.sign(testData))
+        XCTAssertNil(self.publicHeimdall.sign(testData, algorithm: hash))
         
         // Signing should also fail for any destroyed kind of heimdall
-        XCTAssertNil(self.destroyedPublicHeimdall.sign(testData))
-        XCTAssertNil(self.destroyedPrivateHeimdall.sign(testData))
+        XCTAssertNil(self.destroyedPublicHeimdall.sign(testData, algorithm: hash))
+        XCTAssertNil(self.destroyedPrivateHeimdall.sign(testData, algorithm: hash))
         
         // We can also test that signature is always the same (it is solely dependent on the input string)
-        let first = self.privateHeimdall.sign(testData)!
-        let second = self.privateHeimdall.sign(testData)!
+        let first = self.privateHeimdall.sign(testData, algorithm: hash)!
+        let second = self.privateHeimdall.sign(testData, algorithm: hash)!
         XCTAssertEqual(first, second)
     }
     
     func testVerifying() {
+        testVerifying(.sha1)
+        testVerifying(.sha224)
+        testVerifying(.sha256)
+        testVerifying(.sha384)
+        testVerifying(.sha512)
+    }
+    
+    func testVerifying(_ hash: HashAlgorithm) {
         // Verification should work with both private and public heimdalls
         let testData = "This is a test string".data(using: String.Encoding.utf8)!
         let corruptedData = "This is a test injected string".data(using: String.Encoding.utf8)!
-        let testSignature = self.privateHeimdall.sign(testData)!
+        let testSignature = self.privateHeimdall.sign(testData, algorithm: hash)!
         
         // Valid signature test
-        XCTAssertTrue(self.privateHeimdall.verify(testData, signatureData: testSignature))
-        XCTAssertTrue(self.publicHeimdall.verify(testData, signatureData: testSignature))
+        XCTAssertTrue(self.privateHeimdall.verify(testData, signatureData: testSignature, algorithm: hash))
+        XCTAssertTrue(self.publicHeimdall.verify(testData, signatureData: testSignature, algorithm: hash))
         
         // Invalid signature test
-        XCTAssertFalse(self.privateHeimdall.verify(corruptedData, signatureData: testSignature))
-        XCTAssertFalse(self.publicHeimdall.verify(corruptedData, signatureData: testSignature))
+        XCTAssertFalse(self.privateHeimdall.verify(corruptedData, signatureData: testSignature, algorithm: hash))
+        XCTAssertFalse(self.publicHeimdall.verify(corruptedData, signatureData: testSignature, algorithm: hash))
         
         // Destroyed Heimdalls should always fail
-        XCTAssertFalse(self.destroyedPrivateHeimdall.verify(testData, signatureData: testSignature))
-        XCTAssertFalse(self.destroyedPublicHeimdall.verify(testData, signatureData: testSignature))
-        XCTAssertFalse(self.destroyedPrivateHeimdall.verify(corruptedData, signatureData: testSignature))
-        XCTAssertFalse(self.destroyedPublicHeimdall.verify(corruptedData, signatureData: testSignature))
+        XCTAssertFalse(self.destroyedPrivateHeimdall.verify(testData, signatureData: testSignature, algorithm: hash))
+        XCTAssertFalse(self.destroyedPublicHeimdall.verify(testData, signatureData: testSignature, algorithm: hash))
+        XCTAssertFalse(self.destroyedPrivateHeimdall.verify(corruptedData, signatureData: testSignature, algorithm: hash))
+        XCTAssertFalse(self.destroyedPublicHeimdall.verify(corruptedData, signatureData: testSignature, algorithm: hash))
     }
     
     func testEncrypting() {
