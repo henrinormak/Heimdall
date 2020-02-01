@@ -344,11 +344,12 @@ open class Heimdall {
     /// - parameters:
     ///     - string: Message to generate the signature for
     ///     - urlEncode: True if the resulting Base64 data should be URL encoded
+    ///     - algorithm: Hashing algorith which will be chosen
     ///
     /// - returns: Signature as a Base64 string
     ///
-    open func sign(_ string: String, urlEncode: Bool = false) -> String? {
-        if let data = string.data(using: String.Encoding.utf8, allowLossyConversion: false), let signatureData = self.sign(data) {
+    open func sign(_ string: String, urlEncode: Bool = false, algorithm: HashAlgorithm = .sha256) -> String? {
+        if let data = string.data(using: String.Encoding.utf8, allowLossyConversion: false), let signatureData = self.sign(data, algorithm: algorithm) {
             
             var signature = signatureData.base64EncodedString(options: NSData.Base64EncodingOptions(rawValue: 0))
             
@@ -368,14 +369,15 @@ open class Heimdall {
     ///
     /// - parameters:
     ///     - data: Data to sign
+    ///     - algorithm: Hashing algorith which will be chosen
     ///
     /// - returns: Signature as NSData
     ///
-    open func sign(_ data: Data) -> Data? {
-        if let key = obtainKey(.private), let hash = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
+    open func sign(_ data: Data, algorithm: HashAlgorithm = .sha256) -> Data? {
+        if let key = obtainKey(.private), let hash = NSMutableData(length: Int(algorithm.digestLength())) {
             
-            // Create SHA256 hash of the message
-            CC_SHA256((data as NSData).bytes, CC_LONG(data.count), hash.mutableBytes.assumingMemoryBound(to: UInt8.self))
+            // Create hash of the message
+            _ = algorithm.computeHash((data as NSData).bytes, CC_LONG(data.count), hash.mutableBytes.assumingMemoryBound(to: UInt8.self))
             
             // Sign the hash with the private key
             let blockSize = SecKeyGetBlockSize(key)
@@ -387,7 +389,7 @@ open class Heimdall {
                 let encryptedData = result.mutableBytes.assumingMemoryBound(to: UInt8.self)
                 var encryptedDataLength = blockSize
                 
-                let status = SecKeyRawSign(key, .PKCS1SHA256, hashData, hashDataLength, encryptedData, &encryptedDataLength)
+                let status = SecKeyRawSign(key, algorithm.padding(), hashData, hashDataLength, encryptedData, &encryptedDataLength)
                 
                 if status == noErr {
                     // Create Base64 string of the result
@@ -406,12 +408,13 @@ open class Heimdall {
     ///
     /// - parameters:
     ///     - message: Message that was used to generate the signature
-    ///     - signatureBase64: Base64 of the signature data, signature is made of the SHA256 hash of message
+    ///     - signatureBase64: Base64 of the signature data, signature is made of the message hash
     ///     - urlEncoded: True, if the signature is URL encoded and has to be reversed before manipulating
+    ///     - algorithm: Hashing algorith which will be chosen
     ///
     /// - returns: true if the signature is valid (and can be validated)
     ///
-    open func verify(_ message: String, signatureBase64: String, urlEncoded: Bool = true) -> Bool {
+    open func verify(_ message: String, signatureBase64: String, urlEncoded: Bool = true, algorithm: HashAlgorithm = .sha256) -> Bool {
         var string = signatureBase64
         
         if urlEncoded {
@@ -420,7 +423,7 @@ open class Heimdall {
         }
 
         if let data = message.data(using: String.Encoding.utf8, allowLossyConversion: false), let signature = Data(base64Encoded: string, options: NSData.Base64DecodingOptions(rawValue: 0)) {
-            return self.verify(data, signatureData: signature)
+            return self.verify(data, signatureData: signature, algorithm: algorithm)
         }
         
         return false
@@ -432,18 +435,19 @@ open class Heimdall {
     /// - parameters:
     ///     - data: Data the signature should be verified against
     ///     - signatureData: Data of the signature
+    ///     - algorithm: Hashing algorith which will be chosen
     ///
     /// - returns: True if the signature is valid
     ///
-    open func verify(_ data: Data, signatureData: Data) -> Bool {
-        if let key = obtainKey(.public), let hashData = NSMutableData(length: Int(CC_SHA256_DIGEST_LENGTH)) {
-            CC_SHA256((data as NSData).bytes, CC_LONG(data.count), hashData.mutableBytes.assumingMemoryBound(to: UInt8.self))
+    open func verify(_ data: Data, signatureData: Data, algorithm: HashAlgorithm = .sha256) -> Bool {
+        if let key = obtainKey(.public), let hashData = NSMutableData(length: Int(algorithm.digestLength())) {
+            _ = algorithm.computeHash((data as NSData).bytes, CC_LONG(data.count), hashData.mutableBytes.assumingMemoryBound(to: UInt8.self))
             
             let signedData = hashData.bytes.bindMemory(to: UInt8.self, capacity: hashData.length)
             let signatureLength = Int(signatureData.count)
             let signatureData = (signatureData as NSData).bytes.bindMemory(to: UInt8.self, capacity: signatureData.count)
             
-            let result = SecKeyRawVerify(key, .PKCS1SHA256, signedData, Int(CC_SHA256_DIGEST_LENGTH), signatureData, signatureLength)
+            let result = SecKeyRawVerify(key, algorithm.padding(), signedData, Int(algorithm.digestLength()), signatureData, signatureLength)
             
             switch result {
             case noErr:
@@ -982,6 +986,73 @@ private extension Data {
         }
         
         return self.subdata(in: Range.init(range)!)
+    }
+}
+
+public enum HashAlgorithm {
+    case sha1
+    case sha224
+    case sha256
+    case sha384
+    case sha512
+    
+    
+    ///
+    /// The type of padding to use when you create or verify a digital signature.
+    ///
+    fileprivate func padding() -> SecPadding {
+        switch self {
+        case .sha1:
+            return .PKCS1SHA1
+        case .sha224:
+            return .PKCS1SHA224
+        case .sha256:
+            return .PKCS1SHA256
+        case .sha384:
+            return .PKCS1SHA384
+        case .sha512:
+            return .PKCS1SHA512
+        }
+    }
+    
+    ///
+    /// Digest length in bytes
+    ///
+    fileprivate func digestLength() -> Int32 {
+        switch self {
+        case .sha1:
+            return CC_SHA1_DIGEST_LENGTH
+        case .sha224:
+            return CC_SHA224_DIGEST_LENGTH
+        case .sha256:
+            return CC_SHA256_DIGEST_LENGTH
+        case .sha384:
+            return CC_SHA384_DIGEST_LENGTH
+        case .sha512:
+            return CC_SHA512_DIGEST_LENGTH
+        }
+    }
+    
+    ///
+    /// Compute hash of message
+    ///
+    /// - Parameters:
+    ///   - data: input string
+    ///   - len: length of the input string
+    ///   - md: output hash
+    fileprivate func computeHash(_ data: UnsafeRawPointer!, _ len: CC_LONG, _ md: UnsafeMutablePointer<UInt8>!) -> UnsafeMutablePointer<UInt8>! {
+        switch self {
+        case .sha1:
+            return CC_SHA1(data, len, md)
+        case .sha224:
+            return CC_SHA224(data, len, md)
+        case .sha256:
+            return CC_SHA256(data, len, md)
+        case .sha384:
+            return CC_SHA384(data, len, md)
+        case .sha512:
+            return CC_SHA512(data, len, md)
+        }
     }
 }
 
